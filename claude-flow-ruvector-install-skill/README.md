@@ -35,7 +35,6 @@ Or follow the detailed [INSTALL.md](./INSTALL.md) guide.
 | [INSTALL.md](./INSTALL.md) | Complete installation walkthrough |
 | [SKILL.md](./SKILL.md) | Claude Code skill definition (copy to `.claude/skills/`) |
 | [ARCHITECTURE.md](./ARCHITECTURE.md) | System design and data flow |
-| [MIGRATION.md](./MIGRATION.md) | Upgrading from V2 to V3 |
 | [CHANGELOG.md](./CHANGELOG.md) | Version history |
 
 ## Directory Structure
@@ -46,7 +45,6 @@ claude-flow-ruvector-install-skill/
 ├── SKILL.md                # Claude Code skill file
 ├── QUICKSTART.md           # Fast setup
 ├── ARCHITECTURE.md         # System design
-├── MIGRATION.md            # V2 → V3 upgrade
 ├── CHANGELOG.md            # Version history
 ├── scripts/
 │   ├── setup.sh            # Main setup script
@@ -67,6 +65,8 @@ claude-flow-ruvector-install-skill/
 ```
 
 ## Key Features
+SKILL to automate the installation of the latest versions of claude-flow and ruvector
+After the installation, you will have :
 
 ### 🧠 Self-Learning Memory
 - Persistent patterns across sessions
@@ -101,22 +101,17 @@ claude-flow-ruvector-install-skill/
 ## Requirements
 
 - Node.js 20+
-- Claude Code CLI
-- ~500MB disk space
+- be willing to use claude-flow and ruvector ( in a local environment )
 
 ## Using the Skill
-
-After installation, invoke in Claude Code:
-
+- Ask claude code to install this skill, by referencing this repo
+- After installation, invoke in Claude Code:
+- Then you can invoke it naming it or with
 ```
-/claude-flow-ruvector-install
+/claude-flow-ruvector-install 
 ```
 
-Or copy `SKILL.md` to your `.claude/skills/` directory.
-
-## Troubleshooting
-
-See [reference/troubleshooting.md](./reference/troubleshooting.md) for common issues.
+Or simply copy this repo locally to your `.claude/skills/` directory and reference it in your propmt. 
 
 Quick diagnostics:
 ```bash
