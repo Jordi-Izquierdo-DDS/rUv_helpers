@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Database files
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+# Runtime data
+.ruvector/
+.swarm/
+.claude/
+.claude-flow/
+
+# Logs
+*.log
+vite.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backup files
+*.backup
+*.bak
+
+# Lock files (regenerated on install)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Test/QA artifacts
+_validation/
+_doc_viz/

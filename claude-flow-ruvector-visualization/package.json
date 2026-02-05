@@ -1,0 +1,26 @@
+{
+  "name": "ruvector-viz",
+  "version": "2.0.0",
+  "description": "High-performance Three.js/WebGL visualization for RuVector memory (supports millions of nodes)",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"node server.js\" \"vite --port 5173\"",
+    "dev:three": "vite --port 5173",
+    "build": "tsc && vite build",
+    "start": "node server.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.8.1",
+    "concurrently": "^9.0.0",
+    "d3": "^7.9.0",
+    "three": "^0.160.0",
+    "umap-js": "^1.4.0"
+  },
+  "devDependencies": {
+    "@types/d3": "^7.4.3",
+    "@types/three": "^0.160.0",
+    "typescript": "^5.3.0",
+    "vite": "^5.4.0"
+  }
+}

@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Data Dashboard - All Projects Overview</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        .header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(90deg, #00d4ff, #7c3aed, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .header .timestamp {
+            color: #94a3b8;
+            font-size: 0.9em;
+        }
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        .card h2 {
+            color: #00d4ff;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card h2 .icon {
+            font-size: 1.3em;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-item {
+            background: rgba(0,212,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+        .stat-label {
+            font-size: 0.85em;
+            color: #94a3b8;
+            margin-top: 5px;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .data-table th, .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .data-table th {
+            background: rgba(124,58,237,0.2);
+            color: #c4b5fd;
+            font-weight: 600;
+        }
+        .data-table tr:hover {
+            background: rgba(255,255,255,0.05);
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+        .badge-csv { background: #10b981; color: #fff; }
+        .badge-json { background: #f59e0b; color: #fff; }
+        .badge-db { background: #8b5cf6; color: #fff; }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        .project-section {
+            margin-bottom: 40px;
+        }
+        .project-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            background: linear-gradient(90deg, rgba(124,58,237,0.3), rgba(0,212,255,0.3));
+            border-radius: 10px;
+        }
+        .project-header h3 {
+            font-size: 1.5em;
+        }
+        .files-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .file-item {
+            background: rgba(255,255,255,0.1);
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .file-size {
+            color: #94a3b8;
+            font-size: 0.85em;
+        }
+        .summary-boxes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .summary-box {
+            background: linear-gradient(135deg, rgba(124,58,237,0.3), rgba(0,212,255,0.2));
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .summary-box .number {
+            font-size: 3em;
+            font-weight: bold;
+            background: linear-gradient(90deg, #00d4ff, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .summary-box .label {
+            color: #94a3b8;
+            margin-top: 5px;
+        }
+        .v3-banner {
+            background: linear-gradient(135deg, rgba(16,185,129,0.2), rgba(124,58,237,0.2));
+            border: 2px solid rgba(16,185,129,0.5);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .v3-banner h2 {
+            color: #10b981;
+            margin-bottom: 10px;
+            font-size: 1.8em;
+        }
+        .v3-banner p {
+            color: #94a3b8;
+            margin-bottom: 15px;
+        }
+        .v3-features {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .v3-feature {
+            background: rgba(16,185,129,0.1);
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(16,185,129,0.3);
+        }
+        .v3-feature strong {
+            color: #10b981;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Project Data Dashboard</h1>
+        <p class="timestamp">Last Updated: <span id="timestamp"></span></p>
+    </div>
+
+    <!-- V3 Upgrade Banner -->
+    <div class="v3-banner">
+        <h2>🚀 RuVector & Claude-Flow v3 Upgraded!</h2>
+        <p>Advanced learning capabilities now active</p>
+        <div class="v3-features">
+            <div class="v3-feature">
+                <strong>SONA Engine</strong><br>
+                Micro-LoRA & EWC++
+            </div>
+            <div class="v3-feature">
+                <strong>10 Attention Mechanisms</strong><br>
+                Flash, Graph, Hyperbolic
+            </div>
+            <div class="v3-feature">
+                <strong>GNN Layers</strong><br>
+                Graph Neural Networks
+            </div>
+            <div class="v3-feature">
+                <strong>Q-Learning</strong><br>
+                Enhanced Routing
+            </div>
+        </div>
+    </div>
+
+    <div class="summary-boxes">
+        <div class="summary-box">
+            <div class="number">4</div>
+            <div class="label">Projects</div>
+        </div>
+        <div class="summary-box">
+            <div class="number">15</div>
+            <div class="label">Data Files</div>
+        </div>
+        <div class="summary-box">
+            <div class="number">21.4</div>
+            <div class="label">MB Total</div>
+        </div>
+        <div class="summary-box">
+            <div class="number">8</div>
+            <div class="label">Databases</div>
+        </div>
+    </div>
+
+    <div class="dashboard">
+        <!-- Project 1: Veracy_ODCS -->
+        <div class="card">
+            <h2><span class="icon">📊</span> Veracy_ODCS - Insurance Data</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value">3</div>
+                    <div class="stat-label">CSV Files</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">3</div>
+                    <div class="stat-label">JSON Files</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">5</div>
+                    <div class="stat-label">Databases</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">16.4</div>
+                    <div class="stat-label">MB Size</div>
+                </div>
+            </div>
+            <table class="data-table">
+                <tr><th>File</th><th>Type</th><th>Records</th></tr>
+                <tr><td>S01_customers</td><td><span class="badge badge-csv">CSV</span></td><td>3 customers</td></tr>
+                <tr><td>S01_assets</td><td><span class="badge badge-csv">CSV</span></td><td>4 assets</td></tr>
+                <tr><td>S03_claims</td><td><span class="badge badge-csv">CSV</span></td><td>4 claims</td></tr>
+                <tr><td>S01_locations</td><td><span class="badge badge-json">JSON</span></td><td>3 locations</td></tr>
+                <tr><td>S02_policies</td><td><span class="badge badge-json">JSON</span></td><td>3 policies</td></tr>
+                <tr><td>S03_loss_events</td><td><span class="badge badge-json">JSON</span></td><td>4 events</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2><span class="icon">🧠</span> Veracy_ODCS - RuVector v3 <span style="background:#10b981;color:#000;padding:2px 8px;border-radius:4px;font-size:0.7em;margin-left:8px;">NEW</span></h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value">725+</div>
+                    <div class="stat-label">Learnings</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">16.4</div>
+                    <div class="stat-label">MB Total</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" style="font-size:1.5em;">SONA</div>
+                    <div class="stat-label">Micro-LoRA Active</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" style="font-size:1.5em;">10</div>
+                    <div class="stat-label">Attention Mechs</div>
+                </div>
+            </div>
+            <table class="data-table">
+                <tr><th>Database</th><th>Type</th><th>Size</th></tr>
+                <tr><td>vectors.db</td><td><span class="badge badge-db">DB</span></td><td>6.6 MB</td></tr>
+                <tr><td>metadata.db</td><td><span class="badge badge-db">DB</span></td><td>6.6 MB</td></tr>
+                <tr><td>knowledge-graph.db</td><td><span class="badge badge-db">DB</span></td><td>1.6 MB</td></tr>
+                <tr><td>ruvector.db</td><td><span class="badge badge-db">DB</span></td><td>1.6 MB</td></tr>
+                <tr><td style="color:#10b981;">sona-state.json</td><td><span class="badge" style="background:#10b981;">v3</span></td><td>New</td></tr>
+                <tr><td style="color:#10b981;">intelligence.json</td><td><span class="badge" style="background:#10b981;">v3</span></td><td>37 KB</td></tr>
+            </table>
+        </div>
+
+        <!-- Project 2: Neural Test -->
+        <div class="card">
+            <h2><span class="icon">🤖</span> Neural_Test - Trading Data</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value">4</div>
+                    <div class="stat-label">CSV Files</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">20+</div>
+                    <div class="stat-label">JSON Configs</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">3</div>
+                    <div class="stat-label">Databases</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">5.0</div>
+                    <div class="stat-label">MB Size</div>
+                </div>
+            </div>
+            <table class="data-table">
+                <tr><th>File</th><th>Type</th><th>Description</th></tr>
+                <tr><td>btc_backtest_results</td><td><span class="badge badge-csv">CSV</span></td><td>16 backtest runs</td></tr>
+                <tr><td>btc_backtest_trades</td><td><span class="badge badge-csv">CSV</span></td><td>Trade history</td></tr>
+                <tr><td>momentum_config</td><td><span class="badge badge-json">JSON</span></td><td>Strategy params</td></tr>
+                <tr><td>optimization_results</td><td><span class="badge badge-json">JSON</span></td><td>Model results</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2><span class="icon">📈</span> Neural_Test - AI Models</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value">5</div>
+                    <div class="stat-label">Models</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">4</div>
+                    <div class="stat-label">Strategies</div>
+                </div>
+            </div>
+            <table class="data-table">
+                <tr><th>Model</th><th>Type</th><th>Status</th></tr>
+                <tr><td>mean_reversion_optimized</td><td><span class="badge badge-json">JSON</span></td><td>Ready</td></tr>
+                <tr><td>mirror_trading_optimized</td><td><span class="badge badge-json">JSON</span></td><td>Ready</td></tr>
+                <tr><td>momentum_trading_optimized</td><td><span class="badge badge-json">JSON</span></td><td>Ready</td></tr>
+                <tr><td>swing_trading_optimized</td><td><span class="badge badge-json">JSON</span></td><td>Ready</td></tr>
+                <tr><td>nhits_model</td><td><span class="badge badge-json">JSON</span></td><td>Ready</td></tr>
+            </table>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="card full-width">
+            <h2><span class="icon">📊</span> Data Distribution by Project</h2>
+            <div class="chart-container">
+                <canvas id="projectChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2><span class="icon">📁</span> File Types Distribution</h2>
+            <div class="chart-container">
+                <canvas id="fileTypeChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2><span class="icon">💾</span> Storage by Project</h2>
+            <div class="chart-container">
+                <canvas id="storageChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Insurance Data Preview -->
+        <div class="card full-width">
+            <h2><span class="icon">👥</span> Veracy_ODCS - Customer Data Preview</h2>
+            <table class="data-table">
+                <tr>
+                    <th>CustomerID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>City</th>
+                    <th>State</th>
+                </tr>
+                <tr>
+                    <td>CUST001</td>
+                    <td>John Doe</td>
+                    <td>john.doe@email.com</td>
+                    <td>New York</td>
+                    <td>NY</td>
+                </tr>
+                <tr>
+                    <td>CUST002</td>
+                    <td>Jane Smith</td>
+                    <td>jane.smith@email.com</td>
+                    <td>Los Angeles</td>
+                    <td>CA</td>
+                </tr>
+                <tr>
+                    <td>CUST003</td>
+                    <td>Robert Johnson</td>
+                    <td>robert.j@email.com</td>
+                    <td>Chicago</td>
+                    <td>IL</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="card full-width">
+            <h2><span class="icon">📋</span> Veracy_ODCS - Claims Data Preview</h2>
+            <table class="data-table">
+                <tr>
+                    <th>ClaimID</th>
+                    <th>PolicyID</th>
+                    <th>CustomerID</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td>CLM001</td>
+                    <td>POL001</td>
+                    <td>CUST001</td>
+                    <td>$15,000.00</td>
+                    <td><span class="badge" style="background:#ef4444">OPEN</span></td>
+                    <td>Vehicle damage from accident</td>
+                </tr>
+                <tr>
+                    <td>CLM002</td>
+                    <td>POL002</td>
+                    <td>CUST002</td>
+                    <td>$50,000.00</td>
+                    <td><span class="badge" style="background:#f59e0b">PENDING</span></td>
+                    <td>Property damage from storm</td>
+                </tr>
+                <tr>
+                    <td>CLM003</td>
+                    <td>POL001</td>
+                    <td>CUST001</td>
+                    <td>$2,500.00</td>
+                    <td><span class="badge" style="background:#10b981">CLOSED</span></td>
+                    <td>Windshield replacement</td>
+                </tr>
+                <tr>
+                    <td>CLM004</td>
+                    <td>POL003</td>
+                    <td>CUST003</td>
+                    <td>$75,000.00</td>
+                    <td><span class="badge" style="background:#ef4444">OPEN</span></td>
+                    <td>Fire damage to warehouse</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="card full-width">
+            <h2><span class="icon">🏠</span> Veracy_ODCS - Assets Data Preview</h2>
+            <table class="data-table">
+                <tr>
+                    <th>AssetID</th>
+                    <th>Type</th>
+                    <th>Value</th>
+                    <th>LocationID</th>
+                </tr>
+                <tr>
+                    <td>AST001</td>
+                    <td>VEHICLE</td>
+                    <td>$25,000.00</td>
+                    <td>LOC001</td>
+                </tr>
+                <tr>
+                    <td>AST002</td>
+                    <td>PROPERTY</td>
+                    <td>$500,000.00</td>
+                    <td>LOC002</td>
+                </tr>
+                <tr>
+                    <td>AST003</td>
+                    <td>EQUIPMENT</td>
+                    <td>$75,000.00</td>
+                    <td>LOC001</td>
+                </tr>
+                <tr>
+                    <td>AST004</td>
+                    <td>VEHICLE</td>
+                    <td>$35,000.00</td>
+                    <td>LOC003</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Set timestamp
+        document.getElementById('timestamp').textContent = new Date().toLocaleString();
+
+        // Project Distribution Chart
+        const projectCtx = document.getElementById('projectChart').getContext('2d');
+        new Chart(projectCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Veracy_ODCS\n(Insurance)', 'Veracy_ODCS\n(RuVector)', 'Neural_Test\n(Trading)', 'Neural_Test\n(AI Models)'],
+                datasets: [{
+                    label: 'Data Files',
+                    data: [6, 4, 4, 5],
+                    backgroundColor: [
+                        'rgba(0, 212, 255, 0.7)',
+                        'rgba(124, 58, 237, 0.7)',
+                        'rgba(16, 185, 129, 0.7)',
+                        'rgba(245, 158, 11, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgb(0, 212, 255)',
+                        'rgb(124, 58, 237)',
+                        'rgb(16, 185, 129)',
+                        'rgb(245, 158, 11)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    title: {
+                        display: true,
+                        text: 'Files Count by Data Category',
+                        color: '#fff'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255,255,255,0.1)' },
+                        ticks: { color: '#94a3b8' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#94a3b8' }
+                    }
+                }
+            }
+        });
+
+        // File Type Distribution Chart
+        const fileTypeCtx = document.getElementById('fileTypeChart').getContext('2d');
+        new Chart(fileTypeCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['CSV Files', 'JSON Files', 'Databases'],
+                datasets: [{
+                    data: [7, 25, 8],
+                    backgroundColor: [
+                        'rgba(16, 185, 129, 0.8)',
+                        'rgba(245, 158, 11, 0.8)',
+                        'rgba(139, 92, 246, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgb(16, 185, 129)',
+                        'rgb(245, 158, 11)',
+                        'rgb(139, 92, 246)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#fff' }
+                    }
+                }
+            }
+        });
+
+        // Storage Chart
+        const storageCtx = document.getElementById('storageChart').getContext('2d');
+        new Chart(storageCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Veracy_ODCS', 'Neural_Test', 'Test/Viz'],
+                datasets: [{
+                    data: [16.4, 5.0, 0.5],
+                    backgroundColor: [
+                        'rgba(0, 212, 255, 0.8)',
+                        'rgba(124, 58, 237, 0.8)',
+                        'rgba(244, 114, 182, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgb(0, 212, 255)',
+                        'rgb(124, 58, 237)',
+                        'rgb(244, 114, 182)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#fff' }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Storage Size (MB)',
+                        color: '#fff'
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

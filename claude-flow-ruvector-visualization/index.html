@@ -1,0 +1,1929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RuVector Memory Visualization</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%234A1D8F'/><stop offset='100%25' stop-color='%238B4FD9'/></linearGradient></defs><circle cx='50' cy='50' r='45' fill='url(%23g)'/><circle cx='35' cy='40' r='6' fill='%23fff' opacity='0.9'/><circle cx='65' cy='40' r='6' fill='%23fff' opacity='0.9'/><circle cx='50' cy='60' r='8' fill='%23fff' opacity='0.9'/><line x1='35' y1='40' x2='50' y2='60' stroke='%23fff' stroke-width='2' opacity='0.6'/><line x1='65' y1='40' x2='50' y2='60' stroke='%23fff' stroke-width='2' opacity='0.6'/><line x1='35' y1='40' x2='65' y2='40' stroke='%23fff' stroke-width='2' opacity='0.6'/></svg>">
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <style>
+    /* ===============================================================
+       VERACY NEBULA DESIGN SYSTEM
+       Purple spectrum: #4A1D8F -> #6B2FB5 -> #8B4FD9 -> #B794F6
+       WCAG AAA compliance: 8.2:1 contrast ratio
+    =============================================================== */
+
+    :root {
+      --bg-base: #0D0612;
+      --bg-surface: #1A0D2E;
+      --bg-elevated: #261442;
+      --bg-overlay: rgba(13, 6, 18, 0.95);
+      --primary: #6B2FB5;
+      --primary-hover: #8B4FD9;
+      --primary-active: #B794F6;
+      --primary-glow: rgba(139, 79, 217, 0.4);
+      --text-primary: #FFFFFF;
+      --text-secondary: #E0E0E0;
+      --text-muted: #B0B0B0;
+      --accent: #8B4FD9;
+      --success: #10B981;
+      --warning: #F59E0B;
+      --error: #EF4444;
+      --gradient-primary: linear-gradient(135deg, #1A0D2E 0%, #6B2FB5 50%, #8B4FD9 100%);
+      --gradient-surface: linear-gradient(180deg, rgba(107, 47, 181, 0.1) 0%, transparent 100%);
+      --gradient-glow: radial-gradient(ellipse at center, rgba(139, 79, 217, 0.3) 0%, transparent 70%);
+      --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-6: 24px; --space-8: 32px;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+      --blur: blur(12px);
+      --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.3);
+      --shadow-glow: 0 0 40px rgba(139, 79, 217, 0.3);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    /* Global select/dropdown styling for dark theme */
+    select {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      background: rgba(30,30,40,0.8) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23FFFFFF' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E") no-repeat right 8px center / 8px 5px;
+      padding: 4px 24px 4px 6px;
+      font-size: 11px;
+      color: var(--text-primary);
+      border: 1px solid rgba(139, 79, 217, 0.4);
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    select:focus {
+      outline: none;
+      border-color: var(--primary-hover);
+      box-shadow: 0 0 0 2px rgba(139, 79, 217, 0.2);
+    }
+    select option {
+      background-color: #1A0D2E;
+      color: #FFFFFF;
+      padding: 8px 12px;
+    }
+    select option:hover,
+    select option:focus {
+      background-color: #6B2FB5;
+      color: white;
+    }
+    select option:checked {
+      background: linear-gradient(0deg, #6B2FB5 0%, #6B2FB5 100%);
+      color: white;
+      font-weight: 500;
+    }
+    select option:disabled {
+      color: #666;
+      font-style: italic;
+    }
+    select optgroup {
+      background-color: #261442;
+      color: #B794F6;
+      font-weight: 600;
+      font-style: normal;
+      padding: 4px 8px;
+    }
+    /* Webkit scrollbar for select (when applicable) */
+    select::-webkit-scrollbar {
+      width: 8px;
+    }
+    select::-webkit-scrollbar-track {
+      background: #1A0D2E;
+    }
+    select::-webkit-scrollbar-thumb {
+      background: #6B2FB5;
+      border-radius: 4px;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-base);
+      color: var(--text-primary);
+      overflow: hidden;
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 20%, rgba(107, 47, 181, 0.4) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(139, 79, 217, 0.3) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(74, 29, 143, 0.2) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(2px 2px at 10% 10%, rgba(183, 148, 246, 0.5), transparent),
+        radial-gradient(2px 2px at 30% 70%, rgba(139, 79, 217, 0.4), transparent),
+        radial-gradient(2px 2px at 70% 30%, rgba(183, 148, 246, 0.3), transparent),
+        radial-gradient(2px 2px at 90% 90%, rgba(139, 79, 217, 0.5), transparent);
+      background-size: 400px 400px;
+      animation: particles-drift 60s linear infinite;
+      opacity: 0.5;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @keyframes particles-drift {
+      from { transform: translate(0, 0); }
+      to { transform: translate(400px, 400px); }
+    }
+
+    #container { width: 100vw; height: 100vh; position: relative; z-index: 1; }
+    #container canvas { display: block; }
+
+    .panel {
+      position: fixed;
+      background: var(--bg-overlay);
+      backdrop-filter: var(--blur);
+      border: 1px solid rgba(139, 79, 217, 0.3);
+      border-radius: 16px;
+      padding: var(--space-4);
+      box-shadow: var(--shadow-soft);
+      z-index: 100;
+      font-size: 12px;
+    }
+
+    .panel:hover {
+      border-color: rgba(139, 79, 217, 0.5);
+      box-shadow: var(--shadow-soft), var(--shadow-glow);
+    }
+
+    .panel-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--primary-active);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: var(--space-3);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .panel-title::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--gradient-primary);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--primary-glow);
+    }
+
+    #information {
+      top: 16px;
+      left: 16px;
+      width: 400px;
+      min-width: 280px;
+      max-width: 600px;
+      max-height: calc(100vh - 100px);
+      overflow: auto;
+      resize: horizontal;
+      display: none;
+    }
+    #information::-webkit-scrollbar { width: 4px; }
+    #information::-webkit-scrollbar-track { background: transparent; margin: 12px 0; }
+    #information::-webkit-scrollbar-thumb { background: rgba(139, 79, 217, 0.3); border-radius: 2px; }
+    #information::-webkit-scrollbar-thumb:hover { background: rgba(139, 79, 217, 0.5); }
+
+    #information h1 {
+      font-size: 18px;
+      margin-bottom: 8px;
+      background: linear-gradient(90deg, #8B4FD9 0%, #B794F6 50%, #DDD6FE 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .info-section {
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(139, 79, 217, 0.2);
+    }
+    .info-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .info-section-title {
+      font-size: 11px;
+      color: var(--primary-active);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .stat-card {
+      background: rgba(107, 47, 181, 0.15);
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+      border: 1px solid rgba(139, 79, 217, 0.2);
+    }
+    .stat-value { font-size: 20px; font-weight: 700; color: var(--primary-active); font-family: var(--font-mono); }
+    .stat-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+    #vizDescriptionSection { border-top: 1px solid rgba(139, 79, 217, 0.15); padding-top: 10px; }
+    #vizDescription { max-height: 120px; overflow-y: auto; }
+    #vizDescription strong { color: var(--primary-active); font-weight: 600; }
+    #vizDescription em { color: var(--text-muted); font-style: normal; font-size: 10px; }
+
+    .source-filters { display: flex; flex-wrap: wrap; gap: 4px; }
+    .source-filter-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      background: rgba(139, 79, 217, 0.1);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 11px;
+      flex: 1 1 calc(50% - 4px);
+      min-width: 120px;
+    }
+    .source-filter-item:hover { background: rgba(139, 79, 217, 0.2); }
+    .source-filter-item.active { background: rgba(139, 79, 217, 0.2); }
+    .source-filter-item:not(.active) { opacity: 0.4; }
+    .source-filter-label { flex: 1; color: var(--text-secondary); }
+    .source-filter-count {
+      font-size: 9px;
+      color: var(--text-muted);
+      min-width: 30px;
+      text-align: right;
+    }
+
+    .distribution-panel { margin-top: 6px; }
+    .distribution-list { display: flex; flex-direction: column; gap: 4px; max-height: 180px; overflow-y: auto; }
+    .distribution-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      border-radius: 6px;
+      background: rgba(107, 47, 181, 0.1);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .distribution-item:hover { background: rgba(139, 79, 217, 0.2); transform: translateX(2px); }
+    .distribution-item.active { background: rgba(139, 79, 217, 0.4); border: 1px solid var(--primary-hover); }
+    .distribution-item.disabled { opacity: 0.35; }
+    .distribution-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .distribution-label { flex: 1; font-size: 11px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .distribution-count { font-size: 10px; font-weight: 600; color: var(--primary-active); font-family: var(--font-mono); }
+    .distribution-bar { width: 40px; height: 4px; background: rgba(139, 79, 217, 0.2); border-radius: 2px; overflow: hidden; }
+    .distribution-bar-fill { height: 100%; background: var(--gradient-primary); border-radius: 2px; transition: width 0.3s ease; }
+
+    .metric-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(139, 79, 217, 0.1); }
+    .metric-row:last-child { border-bottom: none; }
+    .metric-label { color: var(--text-muted); font-size: 11px; }
+    .metric-value { color: var(--primary-active); font-weight: bold; font-size: 11px; font-family: var(--font-mono); }
+    .metric-section { margin-bottom: 12px; }
+    .metric-section-title { font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; }
+
+    #legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      background: rgba(107, 47, 181, 0.1);
+      transition: all 0.2s;
+    }
+    .legend-item:hover { background: rgba(139, 79, 217, 0.2); }
+    .legend-item.active { background: rgba(139, 79, 217, 0.4); }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+    /* ── Timeline ── */
+    #timeline { bottom: 70px; left: 16px; right: 300px; display: none;
+                transition: left 0.15s, right 0.15s; padding: 10px 14px; }
+
+    /* Row 1: header + tabs + info inline */
+    .tl-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .tl-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;
+                font-weight: 600; color: var(--primary-active); white-space: nowrap; }
+    .tl-tabs { display: flex; gap: 1px; background: rgba(107,47,181,0.15); border-radius: 4px; padding: 1px; }
+    .tl-tab { padding: 2px 10px; font-size: 10px; font-weight: 600; border-radius: 3px; cursor: pointer;
+              color: var(--text-muted); border: none; background: transparent; transition: all 0.12s; }
+    .tl-tab:hover { color: var(--text-secondary); }
+    .tl-tab.active { background: var(--primary); color: #fff; }
+    .tl-info-text { margin-left: auto; font-size: 10px; color: var(--text-muted); font-family: var(--font-mono); white-space: nowrap; }
+    .tl-info-text strong { color: var(--primary-active); }
+    .tl-reset { font-size: 9px; color: var(--primary-active); cursor: pointer; border: none;
+                background: none; padding: 0; margin-left: 6px; opacity: 0.7; }
+    .tl-reset:hover { opacity: 1; text-decoration: underline; }
+
+    /* Row 2: controls */
+    .tl-playback { display: flex; gap: 6px; align-items: center; }
+    .tl-play-btn { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--primary);
+                   background: rgba(107,47,181,0.15); color: var(--primary-active); cursor: pointer;
+                   display: flex; align-items: center; justify-content: center; font-size: 9px;
+                   transition: all 0.12s; flex-shrink: 0; padding: 0; }
+    .tl-play-btn:hover { background: var(--primary); color: #fff; }
+    .tl-play-btn.playing { background: var(--primary); color: #fff; }
+    .tl-scrubber { flex: 1; accent-color: var(--primary); height: 3px; }
+    .tl-date-label { font-size: 9px; color: var(--primary-active); font-family: var(--font-mono);
+                     min-width: 120px; text-align: center; white-space: nowrap; }
+    .tl-speed { width: 42px; font-size: 9px; padding: 1px 2px; background: rgba(107,47,181,0.12);
+                border: 1px solid rgba(139,79,217,0.2); color: var(--text-muted); border-radius: 3px; }
+
+    /* Range controls */
+    .tl-range-row { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; }
+    .tl-range-tag { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;
+                    min-width: 28px; }
+    .tl-range-tag.from { color: var(--warning); }
+    .tl-range-tag.to { color: var(--success); }
+    .tl-range-slider { flex: 1; accent-color: var(--primary); height: 3px; }
+    .tl-range-date { font-size: 9px; font-family: var(--font-mono); color: var(--text-secondary);
+                     min-width: 120px; text-align: right; white-space: nowrap; }
+
+    /* Histogram */
+    .tl-chart { height: 24px; background: rgba(107,47,181,0.08); border-radius: 3px; margin-top: 4px;
+                display: flex; align-items: flex-end; gap: 1px; padding: 2px 3px; overflow: hidden; }
+    .tl-bar { flex: 1; background: var(--primary); border-radius: 1px 1px 0 0; min-width: 2px;
+              position: relative; opacity: 0.7; transition: opacity 0.12s; }
+    .tl-bar.in-range { opacity: 1; }
+    .tl-bar.out-range { opacity: 0.15; }
+    .tl-bar:hover { opacity: 1; }
+    .tl-bar .tl-tip { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+                      background: var(--bg-overlay); padding: 2px 6px; border-radius: 3px;
+                      white-space: nowrap; font-size: 9px; display: none; margin-bottom: 2px;
+                      border: 1px solid rgba(139,79,217,0.3); color: var(--text-secondary);
+                      pointer-events: none; z-index: 10; }
+    .tl-bar:hover .tl-tip { display: block; }
+    .tl-chart-dates { display: flex; justify-content: space-between; font-size: 9px;
+                      color: var(--text-muted); margin-top: 1px; font-family: var(--font-mono); }
+
+    /* Scrubber / range slider tooltip */
+    .tl-scrub-tip {
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 0;
+      transform: translateX(-50%);
+      background: var(--bg-overlay);
+      border: 1px solid rgba(139, 79, 217, 0.4);
+      border-radius: 4px;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--primary-active);
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 200;
+      display: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+    .tl-scrub-tip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 4px solid transparent;
+      border-top-color: rgba(139, 79, 217, 0.4);
+    }
+
+    #config {
+      top: 16px;
+      right: 16px;
+      width: 280px;
+      min-width: 220px;
+      max-width: 500px;
+      max-height: calc(100vh - 32px);
+      overflow: hidden;
+      display: none;
+      position: fixed;
+    }
+    #config-inner {
+      max-height: calc(100vh - 64px);
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-bottom: 16px;
+      margin-right: -16px;
+      padding-right: 12px;
+    }
+    #config-inner::-webkit-scrollbar { width: 4px; }
+    #config-inner::-webkit-scrollbar-track { background: transparent; margin: 8px 0; }
+    #config-inner::-webkit-scrollbar-thumb { background: rgba(139, 79, 217, 0.3); border-radius: 2px; }
+    #config-inner::-webkit-scrollbar-thumb:hover { background: rgba(139, 79, 217, 0.5); }
+    #config .resize-handle {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 8px;
+      cursor: ew-resize;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.4;
+      transition: opacity 0.2s;
+      z-index: 10;
+    }
+    #config .resize-handle:hover { opacity: 0.8; }
+    #config .resize-handle::after {
+      content: '⋮⋮';
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: -3px;
+    }
+    #config h2 { font-size: 14px; margin-bottom: 12px; color: var(--primary-active); display: flex; justify-content: space-between; align-items: center; }
+    #config .section { }
+    #config .section:last-child { }
+    #config label { display: block; color: var(--text-secondary); }
+    #config label.checkbox-label, #config #edgeTypeLegend label { display: flex !important; align-items: center; gap: 6px; cursor: pointer; }
+    #config input[type="checkbox"] { width: 14px; height: 14px; cursor: pointer; accent-color: var(--primary); }
+    #config select {
+      width: 100%;
+      margin-top: 6px;
+    }
+    #config select.compact {
+      min-width: 60px;
+      flex: 1;
+      margin-top: 0;
+    }
+    #config select.no-margin {
+      margin-top: 0;
+    }
+    #config input[type="range"] {
+      width: 100%;
+      padding: 6px;
+      background: rgba(107, 47, 181, 0.2);
+      border: 1px solid rgba(139, 79, 217, 0.3);
+      color: var(--text-primary);
+      border-radius: 4px;
+    }
+    #config select:focus, #config input[type="range"]:focus { outline: none; border-color: var(--primary); }
+    #config input[type="color"] { width: 50px; height: 30px; border: none; border-radius: 4px; cursor: pointer; background: transparent; }
+    .color-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .color-row span { flex: 1; }
+    .slider-value { display: inline-block; width: 40px; text-align: right; color: var(--primary-active); }
+    .namespace-colors { max-height: 150px; overflow-y: auto; padding-right: 8px; }
+
+    /* ── Node Details Panel ──────────────────────────────────────── */
+    #nodeContent {
+      position: fixed;
+      top: 16px;
+      right: 300px; /* default; repositioned dynamically by JS */
+      width: 300px;
+      max-height: calc(100vh - 32px);
+      overflow-y: auto;
+      z-index: 90;
+    }
+    #nodeContent::-webkit-scrollbar { width: 4px; }
+    #nodeContent::-webkit-scrollbar-track { background: transparent; }
+    #nodeContent::-webkit-scrollbar-thumb { background: rgba(139, 79, 217, 0.3); border-radius: 2px; }
+
+    /* ── Inline Q-Pattern Mini-Heatmap (§7.2) ────────────────── */
+    .qp-mini-table { width: 100%; border-collapse: collapse; font-size: 9px; margin-top: 4px; }
+    .qp-mini-table th { text-align: left; color: var(--text-muted); padding: 2px 4px; border-bottom: 1px solid rgba(139,79,217,0.15); font-weight: 600; }
+    .qp-mini-table td { padding: 2px 4px; border-bottom: 1px solid rgba(139,79,217,0.05); }
+    .qp-mini-row { cursor: pointer; transition: background 0.15s; }
+    .qp-mini-row:hover { background: rgba(255,87,34,0.1); }
+    .qp-mini-state { color: var(--text-secondary); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .qp-mini-q { font-weight: 600; text-align: center; min-width: 40px; }
+    .qp-mini-q-bar { display: inline-block; height: 10px; border-radius: 2px; vertical-align: middle; margin-right: 4px; }
+    .qp-mini-visits { text-align: right; color: var(--text-muted); min-width: 40px; }
+    .qp-mini-action { color: #FF5722; font-weight: 500; }
+
+    .nd-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .nd-title {
+      font-size: 13px;
+      color: var(--primary-active);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 0;
+      flex-shrink: 0;
+    }
+    .nd-badge {
+      font-size: 9px;
+      color: var(--text-muted);
+      background: rgba(139, 79, 217, 0.15);
+      border: 1px solid rgba(139, 79, 217, 0.25);
+      border-radius: 3px;
+      padding: 1px 5px;
+      white-space: nowrap;
+    }
+    .nd-close {
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 16px;
+      padding: 2px 6px;
+      line-height: 1;
+      border-radius: 3px;
+      transition: color 0.15s, background 0.15s;
+    }
+    .nd-close:hover { color: var(--text-primary); background: rgba(139, 79, 217, 0.15); }
+    .nd-body .info-section { margin-bottom: 10px; padding-bottom: 10px; }
+    .nd-value { font-size: 12px; color: var(--text-secondary); }
+    .nd-key { font-size: 10px; color: var(--text-muted); word-break: break-all; font-family: var(--font-mono); }
+    .nd-content {
+      font-size: 11px;
+      color: var(--text-secondary);
+      white-space: pre-wrap;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 6px 8px;
+      border-radius: 4px;
+      max-height: 160px;
+      overflow-y: auto;
+      line-height: 1.4;
+    }
+    .nd-meta { font-size: 10px; color: var(--text-muted); line-height: 1.6; }
+
+    #tooltip {
+      position: fixed;
+      background: var(--bg-overlay);
+      backdrop-filter: var(--blur);
+      border: 1px solid rgba(139, 79, 217, 0.5);
+      border-radius: 12px;
+      padding: var(--space-3);
+      max-width: 400px;
+      font-size: 12px;
+      pointer-events: none;
+      display: none;
+      z-index: 200;
+      box-shadow: var(--shadow-soft), var(--shadow-glow);
+    }
+    #tooltip .key { color: var(--primary-active); font-weight: bold; margin-bottom: 4px; }
+    #tooltip .ns { color: var(--text-muted); font-size: 11px; margin-bottom: 4px; }
+    #tooltip .date { color: var(--text-muted); font-size: 10px; margin-bottom: 8px; }
+    #tooltip .preview { color: var(--text-secondary); line-height: 1.4; }
+
+    #controls { position: fixed; bottom: 16px; left: 16px; display: flex; gap: 8px; z-index: 100; }
+    button {
+      background: rgba(107, 47, 181, 0.3);
+      color: var(--text-primary);
+      border: 1px solid rgba(139, 79, 217, 0.3);
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s ease;
+    }
+    button:hover { background: rgba(139, 79, 217, 0.4); border-color: var(--primary); transform: translateY(-2px); }
+    button.active { background: var(--gradient-primary); border-color: var(--primary-active); }
+    #viewModeSelect {
+      background: rgba(107, 47, 181, 0.3);
+      color: var(--text-primary);
+      border: 1px solid rgba(139, 79, 217, 0.3);
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      font-family: inherit;
+      transition: all 0.2s ease;
+      -webkit-appearance: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3e%3cpath fill='%23b794f4' d='M2 4l4 4 4-4'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      padding-right: 26px;
+    }
+    #viewModeSelect:hover { background-color: rgba(139, 79, 217, 0.4); border-color: var(--primary); transform: translateY(-2px); }
+    #viewModeSelect:focus { outline: none; border-color: var(--primary-active); box-shadow: 0 0 8px rgba(139, 79, 217, 0.5); }
+    #viewModeSelect option { background: #1a1030; color: var(--text-primary); padding: 6px; }
+
+    /* ── Search Panel ─────────────────────────────────────────── */
+    #search {
+      position: fixed;
+      bottom: 16px;
+      right: 300px; /* default; repositioned dynamically by JS */
+      width: 320px;
+      z-index: 100;
+      display: none;
+    }
+    #search .search-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    #search .search-header h3 {
+      font-size: 13px;
+      color: var(--primary-active);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 0;
+      flex-shrink: 0;
+    }
+    #search .search-close {
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 16px;
+      padding: 2px 6px;
+      line-height: 1;
+      border-radius: 3px;
+      transition: color 0.15s, background 0.15s;
+    }
+    #search .search-close:hover { color: var(--text-primary); background: rgba(139, 79, 217, 0.15); }
+    #search .toggle-params {
+      background: none;
+      border: 1px solid rgba(139, 79, 217, 0.2);
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 2px 8px;
+      font-size: 10px;
+      border-radius: 3px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    #search .toggle-params:hover { color: var(--primary-active); border-color: rgba(139, 79, 217, 0.4); }
+    #search .search-params {
+      padding: 8px 0;
+      margin-bottom: 8px;
+      border-top: 1px solid rgba(139, 79, 217, 0.15);
+      border-bottom: 1px solid rgba(139, 79, 217, 0.15);
+      display: none;
+    }
+    #search .search-params.show { display: block; }
+    #search .param-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    #search .param-row:last-child { margin-bottom: 0; }
+    #search .param-row label { flex: 1; font-size: 10px; color: var(--text-muted); }
+    #search .param-row input[type="range"] { width: 80px; background: rgba(107, 47, 181, 0.2); }
+    #search .param-row select { width: 90px; padding: 3px; background: rgba(107, 47, 181, 0.2); border: 1px solid rgba(139, 79, 217, 0.3); color: var(--text-primary); border-radius: 3px; font-size: 10px; }
+    #search .param-value { width: 30px; text-align: right; font-size: 10px; color: var(--primary-active); font-family: var(--font-mono); }
+    #search .search-results { max-height: 200px; overflow-y: auto; }
+    #search .search-results:empty { display: none; }
+    #search .result-item {
+      padding: 8px 10px;
+      background: rgba(107, 47, 181, 0.1);
+      border-radius: 4px;
+      margin-bottom: 4px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s;
+    }
+    #search .result-item:hover { border-color: var(--primary); background: rgba(139, 79, 217, 0.15); }
+    #search .result-item.active { border-color: var(--primary-active); background: rgba(139, 79, 217, 0.2); }
+    #search .result-key { font-size: 11px; font-weight: 600; color: var(--primary-active); margin-bottom: 2px; }
+    #search .result-ns { font-size: 9px; color: var(--text-muted); margin-bottom: 4px; }
+    #search .result-preview { font-size: 10px; color: var(--text-secondary); line-height: 1.3; max-height: 32px; overflow: hidden; }
+    #search .result-score { font-size: 9px; color: var(--text-muted); margin-top: 3px; }
+    #search .result-score strong { color: var(--primary-active); }
+    #search .search-input-wrap { display: flex; gap: 6px; align-items: center; margin-top: 8px; }
+    #search .search-input-wrap input[type="text"] {
+      flex: 1;
+      padding: 7px 12px;
+      background: rgba(107, 47, 181, 0.15);
+      border: 1px solid rgba(139, 79, 217, 0.3);
+      color: var(--text-primary);
+      border-radius: 4px;
+      font-size: 12px;
+      outline: none;
+      font-family: var(--font-primary);
+    }
+    #search .search-input-wrap input[type="text"]:focus { border-color: var(--primary); }
+    #search .search-input-wrap input[type="text"]::placeholder { color: var(--text-muted); }
+    #search .search-input-wrap button {
+      height: 30px;
+      padding: 0 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      min-width: 0;
+    }
+    #search .search-status { font-size: 10px; color: var(--text-muted); text-align: center; display: none; margin-top: 6px; }
+    #search .result-item.not-in-graph { opacity: 0.7; border-left: 2px solid var(--text-muted); }
+
+    /* ── Learnings Panel ──────────────────────────────────────── */
+    #learnings {
+      top: 16px;
+      right: 16px;
+      width: 280px;
+      min-width: 220px;
+      max-width: 600px;
+      max-height: calc(100vh - 32px);
+      overflow: hidden;
+      display: none;
+      position: fixed;
+    }
+    #learnings-inner {
+      max-height: calc(100vh - 64px);
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-bottom: 16px;
+      margin-right: -16px;
+      padding-right: 12px;
+    }
+    #learnings-inner::-webkit-scrollbar { width: 4px; }
+    #learnings-inner::-webkit-scrollbar-track { background: transparent; margin: 8px 0; }
+    #learnings-inner::-webkit-scrollbar-thumb { background: rgba(139, 79, 217, 0.3); border-radius: 2px; }
+    #learnings-inner::-webkit-scrollbar-thumb:hover { background: rgba(139, 79, 217, 0.5); }
+    #learnings .resize-handle {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 8px;
+      cursor: ew-resize;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.4;
+      transition: opacity 0.2s;
+      z-index: 10;
+    }
+    #learnings .resize-handle:hover { opacity: 0.8; }
+    #learnings .resize-handle::after {
+      content: '⋮⋮';
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: -3px;
+    }
+    #learnings h2 { font-size: 14px; margin-bottom: 8px; color: var(--primary-active); display: flex; justify-content: space-between; align-items: center; }
+    #learningsFilter {
+      padding: 4px 8px;
+      background: rgba(139,79,217,0.08);
+      border-radius: 4px;
+      font-size: 9px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    #learningsFilter button {
+      background: none; border: none; color: var(--primary); cursor: pointer;
+      font-size: 9px; padding: 0 4px;
+    }
+    #learningsTabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2px;
+      margin-bottom: 8px;
+    }
+    .learn-tab {
+      padding: 3px 8px;
+      font-size: 10px;
+      font-weight: 600;
+      border-radius: 4px;
+      cursor: pointer;
+      color: var(--text-muted);
+      border: 1px solid transparent;
+      background: rgba(107,47,181,0.1);
+      transition: all 0.15s;
+    }
+    .learn-tab:hover { color: var(--text-secondary); background: rgba(107,47,181,0.2); }
+    .learn-tab.active { color: var(--primary-active); border-color: var(--primary); background: rgba(107,47,181,0.25); }
+    .learn-tab.no-data { color: var(--text-muted); opacity: 0.4; }
+
+    /* ── Learnings content-specific styles (class-based) ───── */
+    .agent-card {
+      padding: 8px 10px;
+      border-bottom: 1px solid rgba(139,79,217,0.15);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .agent-card:hover { background: rgba(139,79,217,0.08); }
+    .agent-card.hive { border-left: 3px solid #E91E63; }
+    .agent-card.template { border-left: 3px solid #607D8B; }
+    .agent-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .agent-badge {
+      font-size: 8px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 1px 5px;
+      border-radius: 3px;
+      letter-spacing: 0.5px;
+    }
+    .agent-badge.hive { background: rgba(233,30,99,0.2); color: #E91E63; }
+    .agent-badge.template { background: rgba(96,125,139,0.2); color: #90A4AE; }
+    .agent-badge.ghost { background: rgba(255,152,0,0.2); color: #FFB74D; }
+    .agent-detail {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 3px;
+      line-height: 1.4;
+    }
+    .agent-score {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+    }
+    .agent-score-bar {
+      width: 50px;
+      height: 4px;
+      background: rgba(139,79,217,0.15);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .agent-score-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.3s;
+    }
+    .agent-feedback {
+      font-size: 9px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .ghost-section {
+      padding: 6px 10px;
+      border-top: 1px solid rgba(255,152,0,0.2);
+    }
+    .ghost-section h4 {
+      font-size: 10px;
+      color: #FFB74D;
+      margin: 0 0 4px 0;
+      font-weight: 600;
+    }
+    .ghost-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 9px;
+      color: var(--text-muted);
+      padding: 2px 0;
+    }
+    .feedback-summary {
+      padding: 6px 10px;
+      font-size: 9px;
+      color: var(--text-muted);
+      border-bottom: 1px solid rgba(139,79,217,0.15);
+      display: flex;
+      gap: 12px;
+    }
+    .feedback-stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .feedback-stat .value {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary-active);
+    }
+
+    .gantt-bar { height: 18px; border-radius: 3px; position: relative; min-width: 4px; cursor: pointer; transition: opacity 0.15s; }
+    .gantt-bar:hover { opacity: 0.8; outline: 1px solid rgba(255,255,255,0.4); }
+    .gantt-bar.success { background: #4CAF50; }
+    .gantt-bar.failure { background: #e55; }
+    .gantt-row { display: flex; align-items: center; gap: 6px; padding: 2px 0; border-bottom: 1px solid rgba(139,79,217,0.08); }
+    .gantt-label { font-size: 9px; color: var(--text-muted); width: 120px; min-width: 120px; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .gantt-track { flex: 1; position: relative; height: 18px; }
+    .gantt-context-group { padding: 4px 8px 2px; font-size: 9px; color: var(--primary-active); font-weight: 600; border-bottom: 1px solid rgba(139,79,217,0.15); }
+    .gantt-steps { display: none; padding: 4px 0 4px 126px; font-size: 9px; color: var(--text-muted); }
+    .gantt-step { display: flex; gap: 8px; padding: 1px 0; }
+    .gantt-step-action { color: var(--text-secondary); font-weight: 500; min-width: 50px; }
+    .gantt-step-reward { min-width: 30px; text-align: right; }
+
+    .timeline-row { display: flex; align-items: center; gap: 6px; padding: 3px 8px; border-bottom: 1px solid rgba(139,79,217,0.08); font-size: 10px; cursor: pointer; transition: background 0.15s; }
+    .timeline-row:hover { background: rgba(139,79,217,0.08); }
+    .timeline-file { color: var(--text-secondary); font-weight: 500; min-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .timeline-time { color: var(--text-muted); font-size: 9px; min-width: 70px; }
+    .timeline-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .timeline-dot.has-content { background: #4CAF50; }
+    .timeline-dot.empty { background: #777; }
+    .timeline-chart { position: relative; height: 100px; margin: 8px; border-bottom: 1px solid rgba(139,79,217,0.2); }
+    .timeline-chart-dot { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: #4CAF50; cursor: pointer; transition: transform 0.15s; }
+    .timeline-chart-dot:hover { transform: scale(2); }
+    .edit-filter-active { background: rgba(139,79,217,0.15); border-radius: 3px; }
+
+    .cmd-row { display: flex; align-items: center; gap: 6px; padding: 4px 8px; border-bottom: 1px solid rgba(139,79,217,0.08); font-size: 10px; }
+    .cmd-name { color: var(--text-secondary); font-weight: 500; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cmd-time { color: var(--text-muted); font-size: 9px; min-width: 70px; text-align: right; }
+    .cmd-status { font-size: 8px; font-weight: 700; padding: 1px 4px; border-radius: 2px; }
+    .cmd-status.success { background: rgba(76,175,80,0.2); color: #4CAF50; }
+    .cmd-status.failure { background: rgba(229,85,85,0.2); color: #e55; }
+
+    .analytics-tabs { display: flex; border-bottom: 1px solid rgba(139,79,217,0.2); }
+    .analytics-tab { padding: 6px 12px; font-size: 10px; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; }
+    .analytics-tab.active { color: var(--primary-active); border-bottom-color: var(--primary); }
+    .analytics-tab:hover { color: var(--text-secondary); }
+    .analytics-content { padding: 8px; overflow: auto; max-height: calc(100vh - 160px); }
+    .cal-chart { position: relative; height: 180px; margin: 8px 0; }
+    .cal-point { position: absolute; width: 8px; height: 8px; border-radius: 50%; background: var(--primary); cursor: pointer; }
+    .cal-diagonal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    .error-bar { display: flex; align-items: center; gap: 6px; padding: 3px 0; }
+    .error-bar-fill { height: 16px; border-radius: 2px; background: #e55; min-width: 2px; }
+    .error-bar-label { font-size: 9px; color: var(--text-muted); min-width: 100px; }
+    .error-bar-count { font-size: 9px; color: var(--text-secondary); font-weight: 600; min-width: 30px; text-align: right; }
+    .chord-container { position: relative; width: 100%; height: 300px; }
+    .fix-row { display: flex; gap: 8px; padding: 2px 0; font-size: 9px; color: var(--text-muted); border-bottom: 1px solid rgba(139,79,217,0.05); }
+
+    .qtable-grid {
+      display: grid;
+      gap: 1px;
+      font-size: 9px;
+    }
+    .qtable-cell {
+      width: 100%;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 2px;
+      cursor: default;
+      transition: opacity 0.15s;
+    }
+    .qtable-cell:hover { opacity: 0.8; outline: 1px solid rgba(255,255,255,0.5); }
+    .qtable-header {
+      font-size: 9px;
+      color: var(--text-muted);
+      text-align: center;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      padding: 2px;
+    }
+    .qtable-row-label {
+      font-size: 9px;
+      color: var(--text-secondary);
+      text-align: right;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      padding-right: 4px;
+      max-width: 140px;
+    }
+    .qtable-legend {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      font-size: 9px;
+      color: var(--text-muted);
+      border-top: 1px solid rgba(139,79,217,0.2);
+    }
+    .qtable-legend-gradient {
+      width: 80px;
+      height: 10px;
+      border-radius: 2px;
+      background: linear-gradient(90deg, rgb(220,0,40), rgb(220,180,40), rgb(0,200,40));
+    }
+
+    #loading { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 18px; color: var(--primary-active); z-index: 300; text-align: center; min-width: 280px; }
+    .loading-spinner { width: 40px; height: 40px; border: 3px solid rgba(139, 79, 217, 0.2); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-progress { width: 100%; height: 6px; background: rgba(139, 79, 217, 0.2); border-radius: 3px; margin-top: 6px; overflow: hidden; }
+    .loading-progress-bar { height: 100%; background: linear-gradient(90deg, var(--primary), #10B981); border-radius: 3px; transition: width 0.3s ease; width: 0%; }
+    .loading-status { font-size: 12px; color: var(--text-muted); margin-top: 8px; }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(139, 79, 217, 0.1); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--primary-hover); }
+    input[type="range"] { accent-color: var(--primary); }
+    #rangeStart::-webkit-slider-thumb { background: var(--warning); }
+    #rangeEnd::-webkit-slider-thumb { background: var(--success); }
+
+    #edgeGroups { display: none; bottom: 20px; left: 20px; width: 320px; max-height: 70vh; overflow-y: auto; }
+    #edgeGroups h2 { display: flex; justify-content: space-between; align-items: center; }
+    .edge-group-section { margin-bottom: 12px; }
+    .edge-type-badge { background: rgba(16,185,129,0.2); color: #10B981; padding: 2px 6px; border-radius: 4px; font-size: 10px; }
+    .preset-btn { font-size: 10px !important; padding: 6px !important; cursor: pointer; }
+
+    .renderer-badge {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(90deg, rgba(16, 185, 129, 0.3), rgba(139, 79, 217, 0.3));
+      border: 1px solid rgba(16, 185, 129, 0.5);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #10B981;
+      z-index: 100;
+    }
+    /* ── Node selection and edge highlighting (FIX-V07) ── */
+    .node.selected .node-shape {
+      stroke: #B794F6 !important;
+      stroke-width: 3px !important;
+      filter: drop-shadow(0 0 6px rgba(183, 148, 246, 0.6));
+    }
+    .link.highlighted {
+      stroke: #B794F6 !important;
+      stroke-opacity: 0.9 !important;
+      stroke-width: 2.5px !important;
+    }
+    #node-detail-panel {
+      position: fixed;
+      right: 0;
+      top: 60px;
+      width: 380px;
+      max-height: calc(100vh - 80px);
+      overflow-y: auto;
+      background: var(--bg-surface, #1A0D2E);
+      color: var(--text-secondary, #E0E0E0);
+      padding: 16px;
+      border-left: 2px solid var(--primary, #6B2FB5);
+      z-index: 1000;
+      font-family: var(--font-mono, monospace);
+      font-size: 13px;
+      display: none;
+      box-shadow: -4px 0 24px rgba(0, 0, 0, 0.4);
+    }
+    #node-detail-panel .detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    #node-detail-panel .detail-header h3 {
+      margin: 0;
+      color: var(--text-primary, #fff);
+      font-size: 15px;
+    }
+    #node-detail-panel .detail-close {
+      background: none;
+      border: none;
+      color: var(--text-muted, #888);
+      cursor: pointer;
+      font-size: 18px;
+      padding: 4px 8px;
+    }
+    #node-detail-panel .detail-close:hover {
+      color: var(--text-primary, #fff);
+    }
+    #node-detail-panel .detail-id {
+      color: var(--text-muted, #aaa);
+      font-size: 11px;
+      margin-bottom: 8px;
+      word-break: break-all;
+    }
+    #node-detail-panel .detail-preview {
+      background: var(--bg-elevated, #261442);
+      padding: 8px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+      white-space: pre-wrap;
+      font-size: 12px;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+    #node-detail-panel .detail-section {
+      margin-top: 8px;
+    }
+    #node-detail-panel .detail-section div {
+      margin-bottom: 4px;
+    }
+    #node-detail-panel .detail-connections {
+      margin-top: 8px;
+      color: var(--text-muted, #888);
+      font-size: 11px;
+    }
+
+    /* ── Dashboard Panels (Phase 2 + 3) ───────────────────────── */
+    .dashboard-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(13, 6, 18, 0.97);
+      backdrop-filter: blur(16px);
+      z-index: 500;
+      display: none;
+      overflow-y: auto;
+    }
+    .dashboard-overlay.visible { display: block; }
+    .dashboard-header {
+      position: sticky; top: 0; z-index: 10;
+      display: flex; align-items: center; gap: 12px;
+      padding: 16px 24px;
+      background: rgba(13, 6, 18, 0.95);
+      border-bottom: 1px solid rgba(139, 79, 217, 0.3);
+    }
+    .dashboard-header h2 {
+      font-size: 16px; font-weight: 700; margin: 0;
+      background: linear-gradient(90deg, #8B4FD9 0%, #B794F6 50%, #DDD6FE 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .dashboard-close {
+      margin-left: auto;
+      background: rgba(107, 47, 181, 0.3);
+      border: 1px solid rgba(139, 79, 217, 0.4);
+      color: var(--text-primary);
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    .dashboard-close:hover { background: rgba(139, 79, 217, 0.5); }
+    .dashboard-body { padding: 20px 24px; }
+
+    .dashboard-tabs {
+      display: flex; gap: 2px; flex-wrap: wrap;
+      background: rgba(107, 47, 181, 0.15);
+      border-radius: 6px; padding: 4px;
+      max-width: 600px;
+    }
+    .dashboard-tab {
+      padding: 5px 10px; font-size: 10px; font-weight: 600;
+      border-radius: 4px; cursor: pointer;
+      color: var(--text-muted); border: none;
+      background: transparent; transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .dashboard-tab:hover { color: var(--text-secondary); background: rgba(107, 47, 181, 0.1); }
+    .dashboard-tab.active { background: var(--primary); color: #fff; }
+
+    .dashboard-tab-content { display: none; }
+    .dashboard-tab-content.active { display: block; }
+
+    /* Subtab styles for consolidated tabs */
+    .dashboard-subtabs { display: flex; gap: 4px; margin-bottom: 8px; padding: 4px; background: rgba(0,0,0,0.2); border-radius: 4px; }
+    .subtab { padding: 4px 8px; font-size: 11px; background: transparent; border: 1px solid transparent; color: var(--text-muted); cursor: pointer; border-radius: 3px; transition: all 0.15s; }
+    .subtab:hover { background: rgba(107,47,181,0.2); }
+    .subtab.active { background: rgba(107,47,181,0.3); border-color: var(--accent); color: var(--text-primary); }
+    .subtab-content { display: none; }
+    .subtab-content.active { display: block; }
+
+    .dashboard-refresh-time {
+      font-size: 10px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      padding: 4px 10px;
+      background: rgba(107, 47, 181, 0.1);
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+
+    #liveToggle { display: inline-flex; align-items: center; gap: 4px; }
+    #liveToggle.active { background: rgba(16, 185, 129, 0.3); border-color: #10B981; }
+    #liveToggle.active #liveLabel { color: #10B981; }
+    .live-indicator { position: fixed; top: 8px; right: 8px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 8px; padding: 4px 10px; font-size: 10px; color: #10B981; font-family: var(--font-mono); z-index: 1000; display: none; }
+    .live-indicator.active { display: flex; align-items: center; gap: 6px; }
+    .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #10B981; animation: live-pulse 1.5s ease-in-out infinite; }
+    @keyframes live-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    /* Live mode - new element flash notification */
+    .live-indicator.new-data { animation: live-flash 0.5s ease-out; }
+    @keyframes live-flash { 0% { background: rgba(16, 185, 129, 0.6); transform: scale(1.05); } 100% { background: rgba(16, 185, 129, 0.15); transform: scale(1); } }
+    .live-add-count { background: rgba(16, 185, 129, 0.4); padding: 1px 5px; border-radius: 4px; margin-left: 4px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div id="container"></div>
+  <div id="node-detail-panel"></div>
+  <div id="loading">
+    <div class="loading-spinner"></div>
+    <div id="loadingText">Loading RuVector data...</div>
+    <div class="loading-progress">
+      <div id="loadingProgressBar" class="loading-progress-bar"></div>
+    </div>
+    <div id="loadingStatus" class="loading-status">Connecting to server...</div>
+  </div>
+
+  <div class="renderer-badge">WebGL Renderer (Three.js)</div>
+
+  <!-- Information Panel -->
+  <div id="information" class="panel">
+    <h1 style="display:flex;align-items:center;gap:8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>RuVector Memory</h1>
+
+    <div class="info-section">
+      <div class="stat-grid" id="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="stat-total">-</div>
+          <div class="stat-label">Nodes</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-edges">-</div>
+          <div class="stat-label">Edges</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-foundation">-</div>
+          <div class="stat-label" id="stat-foundation-label">Foundation</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-effectiveness">-</div>
+          <div class="stat-label">Avg Effectiveness</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-section">
+      <div class="info-section-title" style="display:flex;align-items:center;gap:4px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>Node Types (click to toggle)</div>
+      <div class="source-filters" id="source-filters">
+        <!-- Populated dynamically from nodeTypeConfig SSOT -->
+      </div>
+    </div>
+
+    <div class="info-section">
+      <div class="info-section-title" style="display:flex;align-items:center;gap:4px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="6" r="3"/></svg>Edge Types (click to toggle)</div>
+      <div id="edgeLegend" style="display: flex; flex-direction: column; gap: 4px;">
+        <!-- Unified edge type list - populated dynamically -->
+        <div id="edgeTypeLegendList" style="display: flex; flex-direction: column; gap: 2px;">
+          <!-- Populated dynamically with deterministic + semantic groups -->
+        </div>
+      </div>
+    </div>
+
+    <div class="info-section">
+      <div class="info-section-title" id="colorLegendTitle" style="display:flex;align-items:center;gap:4px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a7 7 0 0 1 0 14 5 5 0 0 1 0-10 3 3 0 0 1 0 6"/></svg>Color: Node Type</div>
+      <div id="colorLegend" style="display: flex; flex-wrap: wrap; gap: 4px;"></div>
+    </div>
+
+    <div class="info-section" id="vizDescriptionSection" style="display:none">
+      <div class="info-section-title" style="display:flex;align-items:center;gap:4px;">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <span id="vizDescriptionTitle">Visualization</span>
+      </div>
+      <div id="vizDescription" style="font-size:11px;color:var(--text-secondary);line-height:1.5;padding:4px 0;"></div>
+    </div>
+  </div>
+
+  <div id="timeline" class="panel">
+    <!-- Row 1: title + tabs + status inline -->
+    <div class="tl-header">
+      <span class="tl-title">Timeline</span>
+      <div class="tl-tabs">
+        <button class="tl-tab active" id="tlTabVideo">Playback</button>
+        <button class="tl-tab" id="tlTabRange">Range</button>
+      </div>
+      <span class="tl-info-text" id="filterInfo">All</span>
+      <button class="tl-reset" id="tlReset" title="Reset">Reset</button>
+    </div>
+
+    <!-- Shared scrubber tooltip -->
+    <div class="tl-scrub-tip" id="tlScrubTip"></div>
+
+    <!-- Playback mode -->
+    <div id="tlVideoPane" style="position:relative;">
+      <div class="tl-playback">
+        <button class="tl-play-btn" id="playBtn" title="Play / Stop">&#9654;</button>
+        <input type="range" class="tl-scrubber" id="timelineScrubber" min="0" max="1000" value="1000">
+        <span class="tl-date-label" id="currentDate">-</span>
+        <select class="tl-speed" id="playSpeed" title="Speed">
+          <option value="30">2x</option>
+          <option value="60">1.5x</option>
+          <option value="100" selected>1x</option>
+          <option value="200">.5x</option>
+          <option value="500">.25x</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Range mode -->
+    <div id="tlRangePane" style="display:none; position:relative;">
+      <div class="tl-range-row">
+        <span class="tl-range-tag from">From</span>
+        <input type="range" class="tl-range-slider" id="rangeStart" min="0" max="1000" value="0">
+        <span class="tl-range-date" id="rangeStartDate">-</span>
+      </div>
+      <div class="tl-range-row">
+        <span class="tl-range-tag to">To</span>
+        <input type="range" class="tl-range-slider" id="rangeEnd" min="0" max="1000" value="1000">
+        <span class="tl-range-date" id="rangeEndDate">-</span>
+      </div>
+    </div>
+
+    <!-- Histogram + dates -->
+    <div class="tl-chart" id="timelineChart"></div>
+    <div class="tl-chart-dates"><span id="tlChartMin">-</span><span id="tlChartMax">-</span></div>
+  </div>
+
+  <div id="config" class="panel" style="display: block;">
+    <div class="resize-handle" id="configResizeHandle"></div>
+    <div id="config-inner">
+    <h2 style="display:flex;align-items:center;gap:6px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings <button id="closeConfig" style="padding:2px 8px;font-size:11px;">X</button></h2>
+
+    <!-- Preset Management -->
+    <div class="section" style="background: rgba(107,47,181,0.1); border: 1px solid rgba(139,79,217,0.3); border-radius: 6px; padding: 8px; display: flex; flex-direction: column; gap: 6px;">
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <select id="presetSelect" class="no-margin" style="flex: 1;" title="Select a preset to load">
+          <option value="">— Select Preset —</option>
+          <option value="__default__">Default Settings</option>
+        </select>
+        <button id="presetDelete" style="width: 50px; flex-shrink: 0; padding: 4px 8px; font-size: 10px; background: rgba(239,68,68,0.3); border: 1px solid rgba(239,68,68,0.5); border-radius: 4px; cursor: pointer;" title="Delete selected preset">Del</button>
+      </div>
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <input type="text" id="presetName" placeholder="New preset name..." style="flex: 1; background: rgba(30,30,40,0.8); color: var(--text-primary); border: 1px solid rgba(139,79,217,0.3); border-radius: 4px; padding: 4px 6px; font-size: 11px;">
+        <button id="presetSave" style="width: 50px; flex-shrink: 0; padding: 4px 8px; font-size: 10px; background: rgba(107,47,181,0.4); border: 1px solid rgba(139,79,217,0.5); border-radius: 4px; cursor: pointer;" title="Save current settings as preset">Save</button>
+      </div>
+    </div>
+    <div id="presetStatus" style="font-size: 9px; color: var(--text-muted); margin-top: 4px; min-height: 14px;"></div>
+
+    <!-- Graph Physics Section -->
+    <div class="section" style="border-top: 2px solid var(--primary); margin-top: 6px; padding-top: 6px;">
+      <label style="color: var(--primary-active); font-size: 13px; display: flex; align-items: center; gap: 6px; margin-top: 8px; margin-bottom: 8px; font-weight: 600;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>Graph Physics</label>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+        <div>
+          <label style="font-size: 10px;">Center Force <span class="slider-value" id="centerForceVal">0.05</span></label>
+          <input type="range" id="centerForce" min="0" max="1" step="0.01" value="0.05" title="Pull strength toward center (0=none, 1=strong)">
+        </div>
+        <div>
+          <label style="font-size: 10px;">Collision <span class="slider-value" id="collisionRadiusVal">15</span></label>
+          <input type="range" id="collisionRadius" min="0" max="50" step="1" value="15" title="Minimum distance between nodes (prevents overlap)">
+        </div>
+        <div>
+          <label style="font-size: 10px;">Sim Speed <span class="slider-value" id="alphaDecayVal">0.05</span></label>
+          <input type="range" id="alphaDecay" min="0.01" max="0.2" step="0.01" value="0.05" title="How fast simulation settles (higher=faster)">
+        </div>
+        <div>
+          <label style="font-size: 10px;">Damping <span class="slider-value" id="velocityDecayVal">0.30</span></label>
+          <input type="range" id="velocityDecay" min="0.1" max="0.9" step="0.05" value="0.3" title="Node movement friction (higher=slower)">
+        </div>
+      </div>
+
+      <!-- Cluster Separation -->
+      <div style="margin-top: 10px;">
+        <label style="font-size: 11px; font-weight: 600;">Cluster Separation</label>
+        <div style="display: flex; gap: 6px; margin-top: 6px;">
+          <label class="checkbox-label" style="flex: 1; font-size: 10px; padding: 3px 6px; background: rgba(16,185,129,0.2); border-radius: 4px;" title="Include deterministic edges">
+            <input type="checkbox" id="clusterDeterministic" checked>
+            <span style="color: #10B981;">Det</span>
+          </label>
+          <label class="checkbox-label" style="flex: 1; font-size: 10px; padding: 3px 6px; background: rgba(139,79,217,0.2); border-radius: 4px;" title="Include semantic edges">
+            <input type="checkbox" id="clusterSemantic" checked>
+            <span style="color: #8B4FD9;">Sem</span>
+          </label>
+        </div>
+        <label style="font-size: 10px; margin-top: 6px;">Push to outer ring:</label>
+        <select id="radialTarget" title="Which nodes to push toward the outer ring">
+          <option value="none">None (disabled)</option>
+          <optgroup label="Node Type">
+            <option value="memory">Memory</option>
+            <option value="neural_pattern" selected>Neural Pattern</option>
+            <option value="q_pattern">Q-Pattern</option>
+            <option value="trajectory">Trajectory</option>
+          </optgroup>
+          <optgroup label="Memory Type (from DB schema)">
+            <option value="memtype:command">Command (bash)</option>
+            <option value="memtype:file_access">File Access (read)</option>
+            <option value="memtype:edit">Edit (write)</option>
+            <option value="memtype:search_pattern">Search Pattern</option>
+            <option value="memtype:project">Project</option>
+            <option value="memtype:agent_spawn">Agent Spawn</option>
+            <option value="memtype:adr">ADR</option>
+            <option value="memtype:task">Task</option>
+            <option value="memtype:action">Action</option>
+            <option value="memtype:neural_general">Neural General</option>
+          </optgroup>
+          <optgroup label="Domain">
+            <option value="domain:code">Code</option>
+            <option value="domain:architecture">Architecture</option>
+            <option value="domain:security">Security</option>
+            <option value="domain:error">Error</option>
+            <option value="domain:test">Test</option>
+          </optgroup>
+          <optgroup label="Category (Neural - DB Schema)">
+            <option value="category:filetype">Filetype (e.g., .js, .ts)</option>
+            <option value="category:directory">Directory (e.g., src, viz)</option>
+            <option value="category:component">Component (e.g., command, edit)</option>
+          </optgroup>
+          <optgroup label="Category (Semantic)">
+            <option value="category:general">General</option>
+            <option value="category:testing">Testing</option>
+            <option value="category:security">Security</option>
+            <option value="category:debugging">Debugging</option>
+            <option value="category:api">API</option>
+            <option value="category:performance">Performance</option>
+            <option value="category:documentation">Documentation</option>
+            <option value="category:refactoring">Refactoring</option>
+            <option value="category:quality">Quality</option>
+          </optgroup>
+          <optgroup label="Quality">
+            <option value="quality:high_confidence">High Confidence (&gt;0.9)</option>
+            <option value="quality:low_confidence">Low Confidence (&lt;0.7)</option>
+            <option value="quality:high_qvalue">High Q-Value (&gt;0.7)</option>
+            <option value="quality:low_qvalue">Low Q-Value (&lt;0.4)</option>
+            <option value="quality:successful">Successful Trajectories</option>
+            <option value="quality:failed">Failed Trajectories</option>
+          </optgroup>
+          <optgroup label="Agent">
+            <option value="agent:dynamic">By Agent (dynamic)</option>
+          </optgroup>
+          <optgroup label="Connectivity">
+            <option value="high_connectivity">High Connectivity (&gt;10)</option>
+            <option value="low_connectivity">Low Connectivity (&lt;3)</option>
+            <option value="isolated">Isolated (0 edges)</option>
+          </optgroup>
+          <optgroup label="Embedding">
+            <option value="has_embedding">Has Embedding</option>
+            <option value="no_embedding">No Embedding</option>
+          </optgroup>
+          <optgroup label="Temporal">
+            <option value="temporal:recent">Recent (last 24h)</option>
+            <option value="temporal:week">This Week</option>
+            <option value="temporal:older">Older (&gt;7 days)</option>
+          </optgroup>
+        </select>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px;">
+          <div>
+            <label style="font-size: 10px;">Distance <span class="slider-value" id="radialDistVal">100%</span></label>
+            <input type="range" id="radialDist" min="0" max="1000" step="10" value="1000" title="Distance from center">
+          </div>
+          <div>
+            <label style="font-size: 10px;">Strength <span class="slider-value" id="radialStrengthVal">0.5</span></label>
+            <input type="range" id="radialStrength" min="0" max="5" step="0.1" value="0.5" title="Force strength">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Node Settings Section -->
+    <div class="section" style="border-top: 2px solid var(--primary); margin-top: 6px; padding-top: 6px;">
+      <label style="color: var(--primary-active); font-size: 13px; display: flex; align-items: center; gap: 6px; margin-top: 8px; margin-bottom: 8px; font-weight: 600;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/></svg>Node Settings <span id="nodeSettingsTotalCount" style="font-size: 10px; color: var(--text-muted); font-weight: 400; margin-left: auto;"></span></label>
+
+      <!-- Node Color Mode -->
+      <div>
+        <label style="font-size: 11px; font-weight: 600;">Color Mode</label>
+        <select id="nodeColorMode" title="How nodes are colored based on different data attributes">
+          <optgroup label="Classification">
+            <option value="sourceType">Node Type (memory/neural/q/traj)</option>
+            <option value="memoryType" selected>Memory Type (command/edit/task...)</option>
+            <option value="domain">Domain (code/security/arch...)</option>
+            <option value="category">Category (neural patterns)</option>
+            <option value="contentType">Content Type (code/json/text)</option>
+          </optgroup>
+          <optgroup label="Quality Metrics">
+            <option value="confidence">Confidence (neural patterns)</option>
+            <option value="qValue">Q-Value (reward score)</option>
+            <option value="success">Success/Failure (trajectories)</option>
+            <option value="quality">Quality Score</option>
+          </optgroup>
+          <optgroup label="Structure">
+            <option value="connectivity">Connectivity (edge count)</option>
+            <option value="hasEmbedding">Has Embedding</option>
+            <option value="crossLinkType">Cross-link Type</option>
+            <option value="nsDepth">Namespace Depth</option>
+          </optgroup>
+          <optgroup label="Temporal">
+            <option value="time">Time (oldest→newest)</option>
+            <option value="recency">Recency (newer=brighter)</option>
+            <option value="rate">Rate (entries/day)</option>
+          </optgroup>
+          <optgroup label="Content">
+            <option value="charLength">Content Length</option>
+            <option value="wordCount">Word Count</option>
+          </optgroup>
+          <optgroup label="Q-Patterns">
+            <option value="visits">Visits (exploration count)</option>
+            <option value="state">State Pattern</option>
+            <option value="action">Action Type</option>
+          </optgroup>
+          <optgroup label="Trajectories">
+            <option value="agent">Agent</option>
+          </optgroup>
+          <optgroup label="Foundation RL (FIX-016)">
+            <option value="recallCount">Recall Count (usage freq)</option>
+            <option value="rewardSum">Reward Sum (RL reward)</option>
+            <option value="effectiveness">Effectiveness (reward/recalls)</option>
+            <option value="layer">Layer (summary/detail)</option>
+            <option value="foundationDoc">Document (ADR group)</option>
+          </optgroup>
+          <optgroup label="Other">
+            <option value="single">Single Color</option>
+            <option value="dbSource">DB Source</option>
+            <option value="keyPrefix">Key Prefix</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <!-- Node Size -->
+      <div style="margin-top: 8px;">
+        <label style="font-size: 11px; font-weight: 600;">Size</label>
+        <select id="nodeSizeMode" title="How node size is calculated based on data attributes">
+          <option value="fixed">Fixed Size</option>
+          <option value="connectivity" selected>By Connectivity</option>
+          <option value="rate">By Rate (entries/day)</option>
+          <option value="charLength">By Char Length</option>
+          <option value="wordCount">By Word Count</option>
+          <option value="recency">By Recency (newer=larger)</option>
+          <option value="crossLinks">By Cross-links Count</option>
+          <option value="nsDepth">By Namespace Depth</option>
+          <optgroup label="Q-Patterns">
+            <option value="qValue">By Q-Value</option>
+            <option value="visits">By Visits</option>
+          </optgroup>
+          <optgroup label="Trajectories">
+            <option value="success">By Success</option>
+            <option value="quality">By Quality</option>
+          </optgroup>
+          <optgroup label="Foundation RL (FIX-016)">
+            <option value="recallCount">By Recall Count</option>
+            <option value="effectiveness">By Effectiveness</option>
+          </optgroup>
+        </select>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px;">
+          <div>
+            <label style="font-size: 10px;">Base Size <span class="slider-value" id="nodeSizeVal">8</span></label>
+            <input type="range" id="nodeSize" min="2" max="50" step="1" value="8" title="Base node radius in pixels">
+          </div>
+          <div>
+            <label style="font-size: 10px;">Opacity <span class="slider-value" id="nodeOpacityVal">0.90</span></label>
+            <input type="range" id="nodeOpacity" min="0" max="1" step="0.01" value="0.9" title="Node transparency">
+          </div>
+        </div>
+      </div>
+
+      <!-- Node Type Toggles (dynamically populated from data) -->
+      <div style="margin-top: 8px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <label style="font-size: 11px; color: var(--text-primary); font-weight: 600;">Node Types</label>
+          <div style="display: flex; align-items: center; gap: 4px;">
+            <span id="nodeTypesStatus" style="font-size: 9px; color: var(--primary); font-weight: 600;">All</span>
+            <button id="toggleNodeTypes" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 10px; padding: 2px 4px;">▼</button>
+          </div>
+        </div>
+        <div id="nodeTypesList" style="display: none; margin-top: 6px;">
+          <!-- Populated dynamically from data -->
+          <div style="font-size: 9px; color: var(--text-muted); font-style: italic;">Loading node types...</div>
+        </div>
+      </div>
+
+      <!-- Memory Namespace Sub-type Toggles (dynamically populated) -->
+      <div style="margin-top: 6px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <label style="font-size: 10px; color: var(--text-secondary); font-weight: 600;">Memory Sub-types</label>
+          <div style="display: flex; align-items: center; gap: 4px;">
+            <span id="nsTypesStatus" style="font-size: 9px; color: var(--primary); font-weight: 600;">All</span>
+            <button id="toggleNamespaceTypes" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 10px; padding: 2px 4px;">▼</button>
+          </div>
+        </div>
+        <div id="namespaceTypesList" style="display: none; margin-top: 4px;">
+          <!-- Populated dynamically from data -->
+          <div style="font-size: 9px; color: var(--text-muted); font-style: italic;">Loading...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edge Settings Section -->
+    <div class="section" style="border-top: 2px solid var(--primary); margin-top: 6px; padding-top: 6px;">
+      <label style="color: var(--primary-active); font-size: 13px; display: flex; align-items: center; gap: 6px; margin-top: 8px; margin-bottom: 8px; font-weight: 600;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="6" r="3"/></svg>Edge Settings</label>
+
+      <!-- Deterministic Edges -->
+      <div style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: 8px; padding: 10px; margin-top: 10px;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <label class="checkbox-label" style="margin: 0;" title="Show/hide deterministic edges (explicit relationships)">
+            <input type="checkbox" id="deterministicEnabled" checked>
+            <svg width="14" height="14" style="margin: 0 4px;"><line x1="0" y1="7" x2="14" y2="7" stroke="#10B981" stroke-width="2"/></svg>
+            <span style="font-weight: 600; color: #10B981;">Deterministic</span>
+          </label>
+          <span id="deterministicCount" style="font-size: 10px; color: var(--text-muted);">0</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0 6px; margin-top: 8px;">
+          <div>
+            <label style="font-size: 10px;">Opacity <span class="slider-value" id="detOpacityVal">0.15</span></label>
+            <input type="range" id="deterministicOpacity" min="0" max="1" step="0.01" value="0.15" title="Edge transparency (0=invisible, 1=solid)">
+          </div>
+          <div>
+            <label style="font-size: 10px;">Width <span class="slider-value" id="detWidthVal">1.5</span></label>
+            <input type="range" id="deterministicWidth" min="0.5" max="5" step="0.5" value="1.5" title="Edge line thickness in pixels">
+          </div>
+          <div>
+            <label style="font-size: 10px;">Repulsion <span class="slider-value" id="detRepulsionVal">-100</span></label>
+            <input type="range" id="deterministicRepulsion" min="-1000" max="0" step="10" value="-100" title="Node repulsion force (more negative=stronger push apart)">
+          </div>
+          <div>
+            <label style="font-size: 10px;">Link Dist <span class="slider-value" id="detDistVal">500</span></label>
+            <input type="range" id="deterministicDist" min="10" max="1000" step="10" value="500" title="Target distance between connected nodes">
+          </div>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 6px;">
+          <label class="checkbox-label" style="font-size: 10px; margin: 0;" title="Add glow effect to edges">
+            <input type="checkbox" id="deterministicGlow" checked>
+            <span>Glow</span>
+          </label>
+          <select id="deterministicWidthMode" class="compact" title="How edge width is determined">
+            <option value="fixed" selected>Fixed</option>
+            <option value="similarity">Similarity</option>
+            <option value="weight">Weight</option>
+          </select>
+          <select id="deterministicStyle" class="compact" title="Edge line style">
+            <option value="solid" selected>Solid</option>
+            <option value="dashed">Dashed</option>
+            <option value="dotted">Dotted</option>
+          </select>
+          <input type="color" id="deterministicColor" value="#10B981" style="width: 24px; height: 20px; padding: 0; border: none; flex-shrink: 0;" title="Edge color">
+        </div>
+        <!-- Deterministic edge sub-types (populated dynamically) -->
+        <div style="margin-top: 6px;">
+          <div id="detEdgeSubtypes" style="display: none;"></div>
+        </div>
+      </div>
+
+      <!-- Semantic Edges -->
+      <div style="background: rgba(139,79,217,0.1); border: 1px solid rgba(139,79,217,0.3); border-radius: 8px; padding: 10px; margin-top: 10px;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <label class="checkbox-label" style="margin: 0;" title="Show/hide semantic edges (similarity-based relationships)">
+            <input type="checkbox" id="semanticEnabled" checked>
+            <svg width="14" height="14" style="margin: 0 4px;"><line x1="0" y1="7" x2="14" y2="7" stroke="#8B4FD9" stroke-width="1" stroke-opacity="0.6"/></svg>
+            <span style="font-weight: 600; color: #8B4FD9;">Semantic</span>
+          </label>
+          <span id="semanticCount" style="font-size: 10px; color: var(--text-muted);">0</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0 6px; margin-top: 8px;">
+          <div>
+            <label style="font-size: 10px;">Opacity <span class="slider-value" id="semOpacityVal">0.10</span></label>
+            <input type="range" id="semanticOpacity" min="0" max="1" step="0.01" value="0.10" title="Edge transparency (0=invisible, 1=solid)">
+          </div>
+          <div>
+            <label style="font-size: 10px;">Width <span class="slider-value" id="semWidthVal">2.0</span></label>
+            <input type="range" id="semanticWidth" min="0.5" max="5" step="0.5" value="2.0" title="Edge line thickness in pixels">
+          </div>
+          <div>
+            <label style="font-size: 10px;">Repulsion <span class="slider-value" id="semRepulsionVal">-200</span></label>
+            <input type="range" id="semanticRepulsion" min="-1000" max="0" step="10" value="-200" title="Node repulsion force (more negative=stronger push apart)">
+          </div>
+          <div>
+            <label style="font-size: 10px;">Link Dist <span class="slider-value" id="semDistVal">50</span></label>
+            <input type="range" id="semanticDist" min="10" max="1000" step="10" value="50" title="Target distance between connected nodes">
+          </div>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 6px;">
+          <label class="checkbox-label" style="font-size: 10px; margin: 0;" title="Add glow effect to edges">
+            <input type="checkbox" id="semanticGlow" checked>
+            <span>Glow</span>
+          </label>
+          <select id="semanticWidthMode" class="compact" title="How edge width is determined">
+            <option value="fixed" selected>Fixed</option>
+            <option value="similarity">Similarity</option>
+            <option value="weight">Weight</option>
+          </select>
+          <select id="semanticStyle" class="compact" title="Edge line style">
+            <option value="solid" selected>Solid</option>
+            <option value="dashed">Dashed</option>
+            <option value="dotted">Dotted</option>
+          </select>
+          <input type="color" id="semanticColor" value="#8B4FD9" style="width: 24px; height: 20px; padding: 0; border: none; flex-shrink: 0;" title="Edge color">
+        </div>
+        <!-- Semantic edge sub-types (populated dynamically) -->
+        <div style="margin-top: 6px;">
+          <div id="semEdgeSubtypes" style="display: none;"></div>
+        </div>
+      </div>
+
+      <!-- Hidden container kept for setupEdgeTypeToggles compatibility -->
+      <div id="edgeTypesList" style="display: none;"></div>
+
+      <!-- Edge Distribution -->
+      <div style="margin-top: 10px;">
+        <label style="font-size: 10px; color: var(--text-muted);">Distribution</label>
+        <div style="display: flex; align-items: center; gap: 4px; margin-top: 4px;">
+          <div style="flex: 1; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; display: flex;">
+            <div id="deterministicBar" style="height: 100%; background: #10B981; width: 5%;"></div>
+            <div id="semanticBar" style="height: 100%; background: #8B4FD9; width: 95%;"></div>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 9px; color: var(--text-muted); margin-top: 2px;">
+          <span><span id="deterministicPct">5%</span> det</span>
+          <span><span id="semanticPct">95%</span> sem</span>
+        </div>
+      </div>
+    </div>
+    </div><!-- /config-inner -->
+  </div>
+
+  <div id="tooltip"></div>
+
+  <!-- Node Content Panel - shows when a node is selected -->
+  <div id="nodeContent" class="panel" style="display: none;">
+    <div class="nd-header">
+      <h3 class="nd-title" style="display:flex;align-items:center;gap:6px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Node Details</h3>
+      <span class="nd-badge" id="ndConnCount"></span>
+      <button id="closeNodeContent" class="nd-close">&times;</button>
+    </div>
+    <div id="nodeContentBody" class="nd-body">
+      <div class="info-section">
+        <div class="info-section-title">Type</div>
+        <div id="nodeType" class="nd-value"></div>
+      </div>
+      <div class="info-section">
+        <div class="info-section-title">Key</div>
+        <div id="nodeKey" class="nd-value nd-key"></div>
+      </div>
+      <div class="info-section">
+        <div class="info-section-title">Namespace</div>
+        <div id="nodeNamespace" class="nd-value"></div>
+      </div>
+      <div class="info-section">
+        <div class="info-section-title">Content</div>
+        <div id="nodePreview" class="nd-content"></div>
+      </div>
+      <div class="info-section" id="nodeMetaSection">
+        <div class="info-section-title">Metadata</div>
+        <div id="nodeMeta" class="nd-meta"></div>
+      </div>
+      <div class="info-section" id="nodeQPatternSection" style="display: none;">
+        <div class="info-section-title" style="color: #FF5722; display:flex;align-items:center;gap:4px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>RL Routing <span id="nodeQPatternLabel" style="font-weight:400;color:var(--text-muted);"></span></div>
+        <div id="nodeQPatternBody"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="search" class="panel">
+    <div class="search-header">
+      <h3 style="display:flex;align-items:center;gap:6px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Semantic Search</h3>
+      <button class="toggle-params" id="toggleParams">Params</button>
+      <button class="search-close" id="closeSearch">&times;</button>
+    </div>
+    <div class="search-params" id="searchParams">
+      <div class="param-row">
+        <label>Max Results</label>
+        <input type="range" id="searchMaxResults" min="3" max="20" value="8">
+        <span class="param-value" id="searchMaxResultsVal">8</span>
+      </div>
+      <div class="param-row">
+        <label>Min Similarity</label>
+        <input type="range" id="searchMinSim" min="0" max="0.9" step="0.05" value="0.3">
+        <span class="param-value" id="searchMinSimVal">0.30</span>
+      </div>
+      <div class="param-row">
+        <label>Highlight Mode</label>
+        <select id="searchHighlight">
+          <option value="focus">Focus Only</option>
+          <option value="fade" selected>Fade Others</option>
+          <option value="hide">Hide Others</option>
+        </select>
+      </div>
+      <div class="param-row">
+        <label>Search In</label>
+        <select id="searchField">
+          <option value="all" selected>All Content</option>
+          <option value="key">Keys Only</option>
+          <option value="preview">Preview Only</option>
+          <option value="namespace">Namespace</option>
+        </select>
+      </div>
+      <div class="param-row">
+        <label>Data Source</label>
+        <select id="searchSource">
+          <option value="all" selected>All Sources</option>
+          <option value="memory">Memory</option>
+          <option value="neural_pattern">Neural Patterns</option>
+          <option value="file">Files</option>
+          <option value="agent">Agents</option>
+        </select>
+      </div>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+    <div class="search-status" id="searchStatus"></div>
+    <div class="search-input-wrap">
+      <input type="text" id="searchInput" placeholder="Search memories semantically...">
+      <button id="searchBtn">Go</button>
+      <button id="clearSearchBtn" title="Clear">X</button>
+    </div>
+  </div>
+
+  <!-- Unified Learnings Panel -->
+  <div id="learnings" class="panel" style="display: none;">
+    <div class="resize-handle" id="learningsResizeHandle"></div>
+    <div id="learnings-inner">
+      <h2 style="display:flex;align-items:center;gap:6px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Learnings <button id="closeLearnings" style="padding:2px 8px;font-size:11px;">X</button></h2>
+      <div id="learningsFilter" style="display:none;">
+        Filtered: <span id="learningsFilterLabel"></span>
+        <button id="clearLearningsFilter">Clear</button>
+      </div>
+      <div id="learningsTabs">
+        <button class="learn-tab active" data-tab="qtable">Q-Table</button>
+        <button class="learn-tab" data-tab="agents">Agents</button>
+        <button class="learn-tab" data-tab="gantt">Gantt</button>
+        <button class="learn-tab" data-tab="edits">Edits</button>
+        <button class="learn-tab" data-tab="cmds">Cmds</button>
+        <button class="learn-tab" data-tab="analytics">Analytics</button>
+      </div>
+      <div id="learningsBody"></div>
+    </div>
+  </div>
+
+  <div id="controls" style="display:none">
+    <button id="refreshBtn">Refresh</button>
+    <button id="fitBtn">Fit View</button>
+    <button id="simBtn" class="active">Pause Sim</button>
+    <select id="viewModeSelect" title="Select visualization mode">
+      <option value="2d" selected>2D</option>
+      <option value="2.5d">2.5D</option>
+      <option value="3d">3D</option>
+      <option value="poincare">H² Poincaré</option>
+      <option value="spacetime">Spacetime</option>
+      <option value="tda">TDA Topology</option>
+      <option value="pulse">Pulse</option>
+    </select>
+    <button id="hyperedgeBtn" title="Toggle hyperedge hulls (groups related nodes)">Hulls</button>
+    <button id="timelineBtn">Timeline</button>
+    <button id="infoBtn" class="active">Info</button>
+    <button id="searchToggleBtn">Search</button>
+    <button id="learningsBtn" title="Show Learnings panel (Q-Table, Agents, Gantt, Edits, Cmds, Analytics)">Learnings</button>
+    <button id="dashboardBtn" title="Open full dashboard (Trajectories, Learning Algorithms, Sessions, SONA, System Health)">Dashboard</button>
+    <button id="liveToggle" title="Live Mode">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8" stroke-dasharray="4 2"/></svg>
+      <span id="liveLabel">Live</span>
+    </button>
+    <button id="configBtn" class="active">Settings</button>
+  </div>
+
+  <!-- Dashboard Overlay (Phase 2 + 3) -->
+  <div id="dashboardOverlay" class="dashboard-overlay">
+    <div class="dashboard-header">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <h2>RuVector Intelligence Dashboard</h2>
+      <div class="dashboard-tabs" id="dashboardTabs">
+        <button class="dashboard-tab active" data-dtab="system-health">System Health</button>
+        <button class="dashboard-tab" data-dtab="memory-explorer">Memory Explorer</button>
+        <button class="dashboard-tab" data-dtab="learning-analytics">Learning Analytics</button>
+        <button class="dashboard-tab" data-dtab="sona-neural">SONA & Neural</button>
+        <button class="dashboard-tab" data-dtab="agent-swarm">Agent & Swarm</button>
+      </div>
+      <span class="dashboard-refresh-time" id="dashboard-current-time">--</span>
+      <button class="dashboard-close" id="closeDashboard">Close (Esc)</button>
+    </div>
+    <div class="dashboard-body">
+      <!-- Dashboard 1: System Health Overview -->
+      <div id="dtab-system-health" class="dashboard-tab-content active">
+        <div class="dashboard-subtabs">
+          <button class="subtab active" data-subtab="health-score">Health Score</button>
+          <button class="subtab" data-subtab="db-size-trend">DB Size</button>
+          <button class="subtab" data-subtab="activity-timeline">Activity</button>
+          <button class="subtab" data-subtab="key-metrics">Key Metrics</button>
+        </div>
+        <div class="subtab-content active" id="subtab-health-score"></div>
+        <div class="subtab-content" id="subtab-db-size-trend"></div>
+        <div class="subtab-content" id="subtab-activity-timeline"></div>
+        <div class="subtab-content" id="subtab-key-metrics"></div>
+      </div>
+
+      <!-- Dashboard 2: Memory Explorer -->
+      <div id="dtab-memory-explorer" class="dashboard-tab-content">
+        <div class="dashboard-subtabs">
+          <button class="subtab active" data-subtab="type-distribution">Type Distribution</button>
+          <button class="subtab" data-subtab="memory-timeline">Timeline</button>
+          <button class="subtab" data-subtab="memory-table">Memory Table</button>
+          <button class="subtab" data-subtab="embedding-quality">Embedding Quality</button>
+        </div>
+        <div class="subtab-content active" id="subtab-type-distribution"></div>
+        <div class="subtab-content" id="subtab-memory-timeline"></div>
+        <div class="subtab-content" id="subtab-memory-table"></div>
+        <div class="subtab-content" id="subtab-embedding-quality"></div>
+      </div>
+
+      <!-- Dashboard 3: Learning Analytics -->
+      <div id="dtab-learning-analytics" class="dashboard-tab-content">
+        <div class="dashboard-subtabs">
+          <button class="subtab active" data-subtab="q-distribution">Q-Value Dist</button>
+          <button class="subtab" data-subtab="state-action-heatmap">State-Action</button>
+          <button class="subtab" data-subtab="trajectory-outcomes">Outcomes</button>
+          <button class="subtab" data-subtab="reward-trend">Reward Trend</button>
+          <button class="subtab" data-subtab="learning-velocity">Velocity</button>
+        </div>
+        <div class="subtab-content active" id="subtab-q-distribution"></div>
+        <div class="subtab-content" id="subtab-state-action-heatmap"></div>
+        <div class="subtab-content" id="subtab-trajectory-outcomes"></div>
+        <div class="subtab-content" id="subtab-reward-trend"></div>
+        <div class="subtab-content" id="subtab-learning-velocity"></div>
+      </div>
+
+      <!-- Dashboard 4: SONA & Neural Patterns -->
+      <div id="dtab-sona-neural" class="dashboard-tab-content">
+        <div class="dashboard-subtabs">
+          <button class="subtab active" data-subtab="pattern-categories">Categories</button>
+          <button class="subtab" data-subtab="compression-status">Compression</button>
+          <button class="subtab" data-subtab="pattern-confidence">Confidence</button>
+          <button class="subtab" data-subtab="embedding-health">Embedding Health</button>
+        </div>
+        <div class="subtab-content active" id="subtab-pattern-categories"></div>
+        <div class="subtab-content" id="subtab-compression-status"></div>
+        <div class="subtab-content" id="subtab-pattern-confidence"></div>
+        <div class="subtab-content" id="subtab-embedding-health"></div>
+      </div>
+
+      <!-- Dashboard 5: Agent & Swarm Orchestration -->
+      <div id="dtab-agent-swarm" class="dashboard-tab-content">
+        <div class="dashboard-subtabs">
+          <button class="subtab active" data-subtab="agent-memory">Agent Memory</button>
+          <button class="subtab" data-subtab="vector-index">Vector Index</button>
+          <button class="subtab" data-subtab="system-config">Config</button>
+          <button class="subtab" data-subtab="learning-pipeline">Pipeline</button>
+        </div>
+        <div class="subtab-content active" id="subtab-agent-memory"></div>
+        <div class="subtab-content" id="subtab-vector-index"></div>
+        <div class="subtab-content" id="subtab-system-config"></div>
+        <div class="subtab-content" id="subtab-learning-pipeline"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="live-indicator" id="liveIndicator"><div class="live-dot"></div><span id="liveTimestamp">--</span></div>
+
+  <script type="module" src="/src/main-three.ts"></script>
+</body>
+</html>

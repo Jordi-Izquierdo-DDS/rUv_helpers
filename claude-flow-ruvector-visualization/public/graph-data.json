@@ -1,0 +1,1244 @@
+{
+  "nodes": [
+    {
+      "id": "step_1769279269890_0ezqas",
+      "key": "step_1769279269890_0ezqas",
+      "namespace": "action",
+      "source": "neural_pattern",
+      "preview": "Route task to coder agent for implementation",
+      "color": "#E91E63",
+      "x": 247.47230143797282,
+      "y": 1248.401069187121
+    },
+    {
+      "id": "step_1769279269895_hc9ovb",
+      "key": "step_1769279269895_hc9ovb",
+      "namespace": "action",
+      "source": "neural_pattern",
+      "preview": "Coordinate researcher and architect for design phase",
+      "color": "#E91E63",
+      "x": 372.19977205638816,
+      "y": 1354.3298829244143
+    },
+    {
+      "id": "step_1769279269900_zoqhlb",
+      "key": "step_1769279269900_zoqhlb",
+      "namespace": "action",
+      "source": "neural_pattern",
+      "preview": "Distribute workload across mesh topology",
+      "color": "#E91E63",
+      "x": 188.14738728572323,
+      "y": 1482.2355343172442
+    },
+    {
+      "id": "step_1769279269905_qkgm0j",
+      "key": "step_1769279269905_qkgm0j",
+      "namespace": "action",
+      "source": "neural_pattern",
+      "preview": "Synchronize agents via gossip protocol",
+      "color": "#E91E63",
+      "x": 300.4329922267535,
+      "y": 1354.9294096545118
+    },
+    {
+      "id": "step_1769279269909_28q5jj",
+      "key": "step_1769279269909_28q5jj",
+      "namespace": "action",
+      "source": "neural_pattern",
+      "preview": "Balance load between active workers",
+      "color": "#E91E63",
+      "x": 150,
+      "y": 1362.2548154476765
+    },
+    {
+      "id": "step_1769279269913_gdu4i",
+      "key": "step_1769279269913_gdu4i",
+      "namespace": "action",
+      "source": "neural_pattern",
+      "preview": "Spawn hierarchical swarm for complex task",
+      "color": "#E91E63",
+      "x": 337.99900728293824,
+      "y": 1492.2446567285926
+    },
+    {
+      "id": "step_1769279269917_rnnowb",
+      "key": "step_1769279269917_rnnowb",
+      "namespace": "action",
+      "source": "neural_pattern",
+      "preview": "Assign reviewer to completed implementation",
+      "color": "#E91E63",
+      "x": 550.2574762672682,
+      "y": 1438.9870210215743
+    },
+    {
+      "id": "mem_sec-001",
+      "key": "mem_sec-001",
+      "namespace": "sql-query",
+      "source": "neural_pattern",
+      "preview": "Detect SQL injection vulnerabilities",
+      "color": "#E91E63",
+      "x": 2992.9657886615314,
+      "y": 559.0844221259952
+    },
+    {
+      "id": "mem_sec-002",
+      "key": "mem_sec-002",
+      "namespace": "user-input",
+      "source": "neural_pattern",
+      "preview": "Input validation and sanitization",
+      "color": "#E91E63",
+      "x": 3672.5837371608854,
+      "y": 706.6979198976753
+    },
+    {
+      "id": "mem_sec-003",
+      "key": "mem_sec-003",
+      "namespace": "file-path",
+      "source": "neural_pattern",
+      "preview": "Path traversal prevention",
+      "color": "#E91E63",
+      "x": 3925.129818956276,
+      "y": 797.4348176064912
+    },
+    {
+      "id": "mem_sec-004",
+      "key": "mem_sec-004",
+      "namespace": "authentication",
+      "source": "neural_pattern",
+      "preview": "Authentication security patterns",
+      "color": "#E91E63",
+      "x": 487.1653909512425,
+      "y": 692.4058116147718
+    },
+    {
+      "id": "mem_sec-005",
+      "key": "mem_sec-005",
+      "namespace": "html-output",
+      "source": "neural_pattern",
+      "preview": "XSS prevention patterns",
+      "color": "#E91E63",
+      "x": 668.0877920307419,
+      "y": 744.1905697212187
+    },
+    {
+      "id": "mem_cr-001",
+      "key": "mem_cr-001",
+      "namespace": "function-definition",
+      "source": "neural_pattern",
+      "preview": "Single responsibility principle",
+      "color": "#E91E63",
+      "x": 1490.0921972505728,
+      "y": 355.5419723757716
+    },
+    {
+      "id": "mem_cr-002",
+      "key": "mem_cr-002",
+      "namespace": "error-handling",
+      "source": "neural_pattern",
+      "preview": "Error handling completeness",
+      "color": "#E91E63",
+      "x": 3950,
+      "y": 1010.9845130536739
+    },
+    {
+      "id": "mem_cr-003",
+      "key": "mem_cr-003",
+      "namespace": "async-code",
+      "source": "neural_pattern",
+      "preview": "Async/await best practices",
+      "color": "#E91E63",
+      "x": 3806.375715453701,
+      "y": 944.6754733549552
+    },
+    {
+      "id": "mem_cr-004",
+      "key": "mem_cr-004",
+      "namespace": "type-definition",
+      "source": "neural_pattern",
+      "preview": "TypeScript type safety",
+      "color": "#E91E63",
+      "x": 3937.1315428467346,
+      "y": 875.5225676520677
+    },
+    {
+      "id": "mem_cr-005",
+      "key": "mem_cr-005",
+      "namespace": "code-duplication",
+      "source": "neural_pattern",
+      "preview": "DRY principle violations",
+      "color": "#E91E63",
+      "x": 371.38958953637757,
+      "y": 763.8643528027678
+    },
+    {
+      "id": "mem_perf-001",
+      "key": "mem_perf-001",
+      "namespace": "loop-operation",
+      "source": "neural_pattern",
+      "preview": "O(n²) loop detection",
+      "color": "#E91E63",
+      "x": 1221.304171413,
+      "y": 406.174501265643
+    },
+    {
+      "id": "mem_perf-002",
+      "key": "mem_perf-002",
+      "namespace": "database-query",
+      "source": "neural_pattern",
+      "preview": "N+1 query problem detection",
+      "color": "#E91E63",
+      "x": 3246.7247741727606,
+      "y": 585.4860571984898
+    },
+    {
+      "id": "mem_perf-003",
+      "key": "mem_perf-003",
+      "namespace": "memory-allocation",
+      "source": "neural_pattern",
+      "preview": "Memory leak patterns",
+      "color": "#E91E63",
+      "x": 3802.4932626970517,
+      "y": 914.492249543484
+    },
+    {
+      "id": "mem_perf-004",
+      "key": "mem_perf-004",
+      "namespace": "caching-opportunity",
+      "source": "neural_pattern",
+      "preview": "Caching and memoization",
+      "color": "#E91E63",
+      "x": 3362.925713434095,
+      "y": 826.4514036634783
+    },
+    {
+      "id": "mem_perf-005",
+      "key": "mem_perf-005",
+      "namespace": "bundle-size",
+      "source": "neural_pattern",
+      "preview": "Bundle optimization",
+      "color": "#E91E63",
+      "x": 1523.4273562976355,
+      "y": 186.08809570606485
+    },
+    {
+      "id": "mem_test-001",
+      "key": "mem_test-001",
+      "namespace": "function-boundary",
+      "source": "neural_pattern",
+      "preview": "Edge case identification",
+      "color": "#E91E63",
+      "x": 3426.4424664055687,
+      "y": 797.3721183393203
+    },
+    {
+      "id": "mem_test-002",
+      "key": "mem_test-002",
+      "namespace": "async-operation",
+      "source": "neural_pattern",
+      "preview": "Async error testing",
+      "color": "#E91E63",
+      "x": 3350.8873944000256,
+      "y": 667.4018387024573
+    },
+    {
+      "id": "mem_test-003",
+      "key": "mem_test-003",
+      "namespace": "external-dependency",
+      "source": "neural_pattern",
+      "preview": "Mock strategy patterns",
+      "color": "#E91E63",
+      "x": 1602.7951017474718,
+      "y": 283.54188839293056
+    },
+    {
+      "id": "mem_test-004",
+      "key": "mem_test-004",
+      "namespace": "integration-point",
+      "source": "neural_pattern",
+      "preview": "Contract testing",
+      "color": "#E91E63",
+      "x": 481.9693564557531,
+      "y": 785.1190609958252
+    },
+    {
+      "id": "mem_test-005",
+      "key": "mem_test-005",
+      "namespace": "coverage-gap",
+      "source": "neural_pattern",
+      "preview": "Coverage prioritization",
+      "color": "#E91E63",
+      "x": 341.2345042504686,
+      "y": 799.23359346345
+    },
+    {
+      "id": "mem_api-001",
+      "key": "mem_api-001",
+      "namespace": "endpoint-design",
+      "source": "neural_pattern",
+      "preview": "RESTful design patterns",
+      "color": "#E91E63",
+      "x": 3612.1900832218384,
+      "y": 1142.8115905177178
+    },
+    {
+      "id": "mem_api-002",
+      "key": "mem_api-002",
+      "namespace": "request-validation",
+      "source": "neural_pattern",
+      "preview": "Schema validation (Zod/Joi)",
+      "color": "#E91E63",
+      "x": 1088.340872639565,
+      "y": 448.8936897133714
+    },
+    {
+      "id": "mem_api-003",
+      "key": "mem_api-003",
+      "namespace": "error-response",
+      "source": "neural_pattern",
+      "preview": "Error response standards",
+      "color": "#E91E63",
+      "x": 3143.262047683032,
+      "y": 484.2817670705703
+    },
+    {
+      "id": "mem_api-004",
+      "key": "mem_api-004",
+      "namespace": "pagination",
+      "source": "neural_pattern",
+      "preview": "Pagination strategies",
+      "color": "#E91E63",
+      "x": 1171.21470478434,
+      "y": 497.0796269595249
+    },
+    {
+      "id": "mem_api-005",
+      "key": "mem_api-005",
+      "namespace": "rate-limiting",
+      "source": "neural_pattern",
+      "preview": "Rate limiting patterns",
+      "color": "#E91E63",
+      "x": 3060.8288919926817,
+      "y": 445.3146125292931
+    },
+    {
+      "id": "mem_bug-001",
+      "key": "mem_bug-001",
+      "namespace": "null-error",
+      "source": "neural_pattern",
+      "preview": "Null/undefined tracing",
+      "color": "#E91E63",
+      "x": 329.52275700138745,
+      "y": 911.3963447974916
+    },
+    {
+      "id": "mem_bug-002",
+      "key": "mem_bug-002",
+      "namespace": "race-condition",
+      "source": "neural_pattern",
+      "preview": "Race condition detection",
+      "color": "#E91E63",
+      "x": 3635.555626470288,
+      "y": 833.263206051704
+    },
+    {
+      "id": "mem_bug-003",
+      "key": "mem_bug-003",
+      "namespace": "state-inconsistency",
+      "source": "neural_pattern",
+      "preview": "State management bugs",
+      "color": "#E91E63",
+      "x": 1624.4520866036103,
+      "y": 150
+    },
+    {
+      "id": "mem_bug-004",
+      "key": "mem_bug-004",
+      "namespace": "type-error",
+      "source": "neural_pattern",
+      "preview": "Type mismatch resolution",
+      "color": "#E91E63",
+      "x": 3685.5233150880763,
+      "y": 1127.9762167805723
+    },
+    {
+      "id": "mem_bug-005",
+      "key": "mem_bug-005",
+      "namespace": "regression",
+      "source": "neural_pattern",
+      "preview": "Regression identification",
+      "color": "#E91E63",
+      "x": 3427.4647061989717,
+      "y": 616.6688116763437
+    },
+    {
+      "id": "mem_ref-001",
+      "key": "mem_ref-001",
+      "namespace": "large-function",
+      "source": "neural_pattern",
+      "preview": "Method extraction",
+      "color": "#E91E63",
+      "x": 1654.5988980538648,
+      "y": 201.69006799932345
+    },
+    {
+      "id": "mem_ref-002",
+      "key": "mem_ref-002",
+      "namespace": "god-class",
+      "source": "neural_pattern",
+      "preview": "Class decomposition",
+      "color": "#E91E63",
+      "x": 3853.4019316865993,
+      "y": 744.0589587711637
+    },
+    {
+      "id": "mem_ref-003",
+      "key": "mem_ref-003",
+      "namespace": "primitive-obsession",
+      "source": "neural_pattern",
+      "preview": "Value object patterns",
+      "color": "#E91E63",
+      "x": 1507.3051803744215,
+      "y": 163.95805682317928
+    },
+    {
+      "id": "mem_ref-004",
+      "key": "mem_ref-004",
+      "namespace": "feature-envy",
+      "source": "neural_pattern",
+      "preview": "Behavior relocation",
+      "color": "#E91E63",
+      "x": 896.6977767676844,
+      "y": 632.2305422250515
+    },
+    {
+      "id": "mem_ref-005",
+      "key": "mem_ref-005",
+      "namespace": "magic-numbers",
+      "source": "neural_pattern",
+      "preview": "Constant extraction",
+      "color": "#E91E63",
+      "x": 1121.9327926054848,
+      "y": 548.3333514196412
+    },
+    {
+      "id": "mem_doc-001",
+      "key": "mem_doc-001",
+      "namespace": "public-api",
+      "source": "neural_pattern",
+      "preview": "JSDoc generation",
+      "color": "#E91E63",
+      "x": 1445.1060872890491,
+      "y": 379.0503812303533
+    },
+    {
+      "id": "mem_doc-002",
+      "key": "mem_doc-002",
+      "namespace": "complex-logic",
+      "source": "neural_pattern",
+      "preview": "Inline documentation",
+      "color": "#E91E63",
+      "x": 2999.1587870512535,
+      "y": 407.40098142745325
+    },
+    {
+      "id": "mem_doc-003",
+      "key": "mem_doc-003",
+      "namespace": "api-endpoint",
+      "source": "neural_pattern",
+      "preview": "OpenAPI spec generation",
+      "color": "#E91E63",
+      "x": 3542.9651238043825,
+      "y": 696.0579016749348
+    },
+    {
+      "id": "mem_doc-004",
+      "key": "mem_doc-004",
+      "namespace": "architecture-change",
+      "source": "neural_pattern",
+      "preview": "ADR updates",
+      "color": "#E91E63",
+      "x": 406.6869224048118,
+      "y": 1014.6559550110677
+    },
+    {
+      "id": "mem_doc-005",
+      "key": "mem_doc-005",
+      "namespace": "new-feature",
+      "source": "neural_pattern",
+      "preview": "Example generation",
+      "color": "#E91E63",
+      "x": 3542.8223781140264,
+      "y": 780.2375806676183
+    },
+    {
+      "id": "mem_1769273773",
+      "key": "mem_1769273773",
+      "namespace": "command",
+      "source": "memory",
+      "preview": " succeeded",
+      "color": "#888888",
+      "x": 610.5372211438006,
+      "y": 1269.7581252429907
+    },
+    {
+      "id": "mem-1769274205232-x0h6izpkh",
+      "key": "mem-1769274205232-x0h6izpkh",
+      "namespace": "task",
+      "source": "memory",
+      "preview": "Task: ",
+      "color": "#888888",
+      "x": 426.1829566527775,
+      "y": 1229.5920136371428
+    },
+    {
+      "id": "mem-1769274290494-3sr4sxbr1",
+      "key": "mem-1769274290494-3sr4sxbr1",
+      "namespace": "action",
+      "source": "memory",
+      "preview": "Action: edit file ",
+      "color": "#4CAF50",
+      "x": 558.6362777173603,
+      "y": 1285.5520186556432
+    },
+    {
+      "id": "mem_1769274295",
+      "key": "mem_1769274295",
+      "namespace": "edit",
+      "source": "memory",
+      "preview": "successful edit of  in project",
+      "color": "#888888",
+      "x": 605.3653132349812,
+      "y": 1338.433964993945
+    },
+    {
+      "id": "mem_1769281104",
+      "key": "mem_1769281104",
+      "namespace": "search_pattern",
+      "source": "memory",
+      "preview": "Search: ",
+      "color": "#9C27B0",
+      "x": 332.9067764700093,
+      "y": 1126.7807062495833
+    },
+    {
+      "id": "mem_1769281122",
+      "key": "mem_1769281122",
+      "namespace": "file_access",
+      "source": "memory",
+      "preview": "Reading: ",
+      "color": "#2196F3",
+      "x": 465.0785854720666,
+      "y": 1456.4883395080346
+    }
+  ],
+  "edges": [
+    {
+      "source": 7,
+      "target": 43,
+      "weight": 0.999526097040283
+    },
+    {
+      "source": 7,
+      "target": 31,
+      "weight": 0.9989562832871223
+    },
+    {
+      "source": 7,
+      "target": 29,
+      "weight": 0.9899760958509753
+    },
+    {
+      "source": 7,
+      "target": 18,
+      "weight": 0.9634925809211786
+    },
+    {
+      "source": 7,
+      "target": 23,
+      "weight": 0.9460702890010748
+    },
+    {
+      "source": 8,
+      "target": 33,
+      "weight": 0.999889831042252
+    },
+    {
+      "source": 8,
+      "target": 46,
+      "weight": 0.999647328430598
+    },
+    {
+      "source": 8,
+      "target": 44,
+      "weight": 0.9995877952187072
+    },
+    {
+      "source": 8,
+      "target": 22,
+      "weight": 0.9967536524535213
+    },
+    {
+      "source": 8,
+      "target": 20,
+      "weight": 0.9964199727891596
+    },
+    {
+      "source": 9,
+      "target": 38,
+      "weight": 0.9999950203374948
+    },
+    {
+      "source": 9,
+      "target": 15,
+      "weight": 0.9994773378538298
+    },
+    {
+      "source": 9,
+      "target": 33,
+      "weight": 0.9958667283333839
+    },
+    {
+      "source": 9,
+      "target": 19,
+      "weight": 0.9951955928514934
+    },
+    {
+      "source": 9,
+      "target": 13,
+      "weight": 0.9944668309354644
+    },
+    {
+      "source": 10,
+      "target": 25,
+      "weight": 0.9971465546541
+    },
+    {
+      "source": 10,
+      "target": 16,
+      "weight": 0.9928940157573685
+    },
+    {
+      "source": 10,
+      "target": 26,
+      "weight": 0.9827256700374697
+    },
+    {
+      "source": 10,
+      "target": 32,
+      "weight": 0.8130402530847813
+    },
+    {
+      "source": 10,
+      "target": 11,
+      "weight": 0.7734478016938415
+    },
+    {
+      "source": 11,
+      "target": 40,
+      "weight": 0.8938320966544637
+    },
+    {
+      "source": 11,
+      "target": 25,
+      "weight": 0.8190909374115892
+    },
+    {
+      "source": 12,
+      "target": 42,
+      "weight": 0.9978722427135283
+    },
+    {
+      "source": 12,
+      "target": 39,
+      "weight": 0.9915640658953077
+    },
+    {
+      "source": 12,
+      "target": 34,
+      "weight": 0.979163634133105
+    },
+    {
+      "source": 12,
+      "target": 24,
+      "weight": 0.9779927557298564
+    },
+    {
+      "source": 12,
+      "target": 37,
+      "weight": 0.9760051350523925
+    },
+    {
+      "source": 13,
+      "target": 19,
+      "weight": 0.9999742139836243
+    },
+    {
+      "source": 13,
+      "target": 14,
+      "weight": 0.9991161301855613
+    },
+    {
+      "source": 13,
+      "target": 15,
+      "weight": 0.9973430722183569
+    },
+    {
+      "source": 13,
+      "target": 38,
+      "weight": 0.9947934026869181
+    },
+    {
+      "source": 13,
+      "target": 33,
+      "weight": 0.9808150069307757
+    },
+    {
+      "source": 14,
+      "target": 19,
+      "weight": 0.9987884986752378
+    },
+    {
+      "source": 14,
+      "target": 15,
+      "weight": 0.9933993802591741
+    },
+    {
+      "source": 14,
+      "target": 38,
+      "weight": 0.9896302368493369
+    },
+    {
+      "source": 14,
+      "target": 33,
+      "weight": 0.9717537170727949
+    },
+    {
+      "source": 14,
+      "target": 46,
+      "weight": 0.9611527387244978
+    },
+    {
+      "source": 15,
+      "target": 38,
+      "weight": 0.9995743802912146
+    },
+    {
+      "source": 15,
+      "target": 19,
+      "weight": 0.9978404978525829
+    },
+    {
+      "source": 15,
+      "target": 33,
+      "weight": 0.9924100543654264
+    },
+    {
+      "source": 15,
+      "target": 46,
+      "weight": 0.9864695934003705
+    },
+    {
+      "source": 15,
+      "target": 44,
+      "weight": 0.9861140957294421
+    },
+    {
+      "source": 16,
+      "target": 26,
+      "weight": 0.9977659269236038
+    },
+    {
+      "source": 16,
+      "target": 25,
+      "weight": 0.9810773801183305
+    },
+    {
+      "source": 16,
+      "target": 32,
+      "weight": 0.8765466499050015
+    },
+    {
+      "source": 17,
+      "target": 30,
+      "weight": 0.998455233706603
+    },
+    {
+      "source": 17,
+      "target": 41,
+      "weight": 0.9817507845864788
+    },
+    {
+      "source": 17,
+      "target": 28,
+      "weight": 0.9782912434562929
+    },
+    {
+      "source": 17,
+      "target": 42,
+      "weight": 0.8679313409935324
+    },
+    {
+      "source": 17,
+      "target": 39,
+      "weight": 0.7550910483878286
+    },
+    {
+      "source": 18,
+      "target": 23,
+      "weight": 0.9982675278545214
+    },
+    {
+      "source": 18,
+      "target": 36,
+      "weight": 0.9982228426991334
+    },
+    {
+      "source": 18,
+      "target": 20,
+      "weight": 0.9950263235963948
+    },
+    {
+      "source": 18,
+      "target": 22,
+      "weight": 0.9946154293946752
+    },
+    {
+      "source": 18,
+      "target": 29,
+      "weight": 0.9916481848501655
+    },
+    {
+      "source": 19,
+      "target": 38,
+      "weight": 0.9954996147540328
+    },
+    {
+      "source": 19,
+      "target": 33,
+      "weight": 0.9821896481555611
+    },
+    {
+      "source": 19,
+      "target": 46,
+      "weight": 0.9735708499009791
+    },
+    {
+      "source": 19,
+      "target": 44,
+      "weight": 0.9730765481398239
+    },
+    {
+      "source": 19,
+      "target": 22,
+      "weight": 0.9598136961655255
+    },
+    {
+      "source": 20,
+      "target": 22,
+      "weight": 0.9999918259004782
+    },
+    {
+      "source": 20,
+      "target": 36,
+      "weight": 0.9991940610746104
+    },
+    {
+      "source": 20,
+      "target": 23,
+      "weight": 0.999163485787231
+    },
+    {
+      "source": 20,
+      "target": 44,
+      "weight": 0.9984363895264187
+    },
+    {
+      "source": 20,
+      "target": 46,
+      "weight": 0.9983136397853579
+    },
+    {
+      "source": 21,
+      "target": 37,
+      "weight": 0.9994520976672396
+    },
+    {
+      "source": 21,
+      "target": 24,
+      "weight": 0.9991000894114588
+    },
+    {
+      "source": 21,
+      "target": 34,
+      "weight": 0.9988426811842294
+    },
+    {
+      "source": 21,
+      "target": 39,
+      "weight": 0.9924907005349143
+    },
+    {
+      "source": 21,
+      "target": 42,
+      "weight": 0.9499075626408311
+    },
+    {
+      "source": 22,
+      "target": 36,
+      "weight": 0.9990235957702128
+    },
+    {
+      "source": 22,
+      "target": 23,
+      "weight": 0.9989899720703446
+    },
+    {
+      "source": 22,
+      "target": 44,
+      "weight": 0.9986542464647189
+    },
+    {
+      "source": 22,
+      "target": 46,
+      "weight": 0.9985401945924369
+    },
+    {
+      "source": 22,
+      "target": 33,
+      "weight": 0.9954487737233285
+    },
+    {
+      "source": 23,
+      "target": 36,
+      "weight": 0.9999997152694454
+    },
+    {
+      "source": 23,
+      "target": 44,
+      "weight": 0.9953152146596025
+    },
+    {
+      "source": 23,
+      "target": 46,
+      "weight": 0.9951046067345847
+    },
+    {
+      "source": 23,
+      "target": 33,
+      "weight": 0.9901612456183009
+    },
+    {
+      "source": 23,
+      "target": 29,
+      "weight": 0.9823416687705523
+    },
+    {
+      "source": 24,
+      "target": 34,
+      "weight": 0.9999838242777425
+    },
+    {
+      "source": 24,
+      "target": 37,
+      "weight": 0.9999565408755637
+    },
+    {
+      "source": 24,
+      "target": 39,
+      "weight": 0.9967857249993382
+    },
+    {
+      "source": 24,
+      "target": 42,
+      "weight": 0.9623086559408782
+    },
+    {
+      "source": 24,
+      "target": 43,
+      "weight": 0.9174874410028134
+    },
+    {
+      "source": 25,
+      "target": 26,
+      "weight": 0.9659507034487244
+    },
+    {
+      "source": 25,
+      "target": 32,
+      "weight": 0.7667694121298234
+    },
+    {
+      "source": 26,
+      "target": 32,
+      "weight": 0.9067436469373827
+    },
+    {
+      "source": 26,
+      "target": 45,
+      "weight": 0.77004823837652
+    },
+    {
+      "source": 27,
+      "target": 35,
+      "weight": 0.9851373439910422
+    },
+    {
+      "source": 28,
+      "target": 41,
+      "weight": 0.9998484473435072
+    },
+    {
+      "source": 28,
+      "target": 30,
+      "weight": 0.9882944089506225
+    },
+    {
+      "source": 28,
+      "target": 40,
+      "weight": 0.8111764340587532
+    },
+    {
+      "source": 29,
+      "target": 31,
+      "weight": 0.9953939646555715
+    },
+    {
+      "source": 29,
+      "target": 43,
+      "weight": 0.9938545537723454
+    },
+    {
+      "source": 29,
+      "target": 36,
+      "weight": 0.9822002016196318
+    },
+    {
+      "source": 29,
+      "target": 44,
+      "weight": 0.9596506034751573
+    },
+    {
+      "source": 29,
+      "target": 46,
+      "weight": 0.9590425581108207
+    },
+    {
+      "source": 30,
+      "target": 41,
+      "weight": 0.9908005646742953
+    },
+    {
+      "source": 30,
+      "target": 42,
+      "weight": 0.8389937761332862
+    },
+    {
+      "source": 31,
+      "target": 43,
+      "weight": 0.9998889264087053
+    },
+    {
+      "source": 31,
+      "target": 36,
+      "weight": 0.9596684107782132
+    },
+    {
+      "source": 31,
+      "target": 44,
+      "weight": 0.9282725345865079
+    },
+    {
+      "source": 31,
+      "target": 46,
+      "weight": 0.9274691424601968
+    },
+    {
+      "source": 31,
+      "target": 37,
+      "weight": 0.9152529522128953
+    },
+    {
+      "source": 32,
+      "target": 45,
+      "weight": 0.9672636086035563
+    },
+    {
+      "source": 33,
+      "target": 46,
+      "weight": 0.9991430183261687
+    },
+    {
+      "source": 33,
+      "target": 44,
+      "weight": 0.9990515247004258
+    },
+    {
+      "source": 33,
+      "target": 38,
+      "weight": 0.9955751356145934
+    },
+    {
+      "source": 33,
+      "target": 36,
+      "weight": 0.9902665593801422
+    },
+    {
+      "source": 33,
+      "target": 43,
+      "weight": 0.9049569086459919
+    },
+    {
+      "source": 34,
+      "target": 37,
+      "weight": 0.9998873390040178
+    },
+    {
+      "source": 34,
+      "target": 39,
+      "weight": 0.9972252732557455
+    },
+    {
+      "source": 34,
+      "target": 42,
+      "weight": 0.963839944721042
+    },
+    {
+      "source": 34,
+      "target": 43,
+      "weight": 0.9152101896540977
+    },
+    {
+      "source": 34,
+      "target": 36,
+      "weight": 0.7553240863477597
+    },
+    {
+      "source": 35,
+      "target": 38,
+      "weight": 0.77327749387378
+    },
+    {
+      "source": 36,
+      "target": 44,
+      "weight": 0.9953878908907332
+    },
+    {
+      "source": 36,
+      "target": 46,
+      "weight": 0.9951789010374317
+    },
+    {
+      "source": 36,
+      "target": 38,
+      "weight": 0.972805815358437
+    },
+    {
+      "source": 36,
+      "target": 43,
+      "weight": 0.9553717370238892
+    },
+    {
+      "source": 36,
+      "target": 37,
+      "weight": 0.765076016893205
+    },
+    {
+      "source": 37,
+      "target": 39,
+      "weight": 0.9959955132125142
+    },
+    {
+      "source": 37,
+      "target": 42,
+      "weight": 0.959731383757574
+    },
+    {
+      "source": 37,
+      "target": 43,
+      "weight": 0.9211558865575082
+    },
+    {
+      "source": 38,
+      "target": 46,
+      "weight": 0.9908324643427797
+    },
+    {
+      "source": 38,
+      "target": 44,
+      "weight": 0.9905391077541482
+    },
+    {
+      "source": 38,
+      "target": 43,
+      "weight": 0.8609685380759443
+    },
+    {
+      "source": 39,
+      "target": 42,
+      "weight": 0.9810032479505146
+    },
+    {
+      "source": 39,
+      "target": 43,
+      "weight": 0.8826719447420477
+    },
+    {
+      "source": 40,
+      "target": 41,
+      "weight": 0.8008725365915429
+    },
+    {
+      "source": 41,
+      "target": 42,
+      "weight": 0.7576368390480218
+    },
+    {
+      "source": 42,
+      "target": 43,
+      "weight": 0.7747301446401336
+    },
+    {
+      "source": 43,
+      "target": 44,
+      "weight": 0.9226265503401889
+    },
+    {
+      "source": 43,
+      "target": 46,
+      "weight": 0.9217934533101582
+    },
+    {
+      "source": 44,
+      "target": 46,
+      "weight": 0.999997679190738
+    }
+  ],
+  "meta": {
+    "totalNodes": 53,
+    "totalEdges": 136,
+    "namespaces": [
+      "neural_pattern",
+      "memory"
+    ],
+    "extractedAt": "2026-01-24T19:22:44.739Z",
+    "similarityThreshold": 0.75,
+    "ruvectorVersion": "v3 (0.1.96)",
+    "features": [
+      "SONA",
+      "Attention",
+      "GNN",
+      "Q-Learning"
+    ]
+  },
+  "v3": {
+    "sona": null,
+    "intelligence": {
+      "totalMemories": 0,
+      "totalPatterns": 0,
+      "qLearning": {},
+      "attentionMechanisms": [],
+      "gnnLayers": []
+    },
+    "version": "v3"
+  }
+}
